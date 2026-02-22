@@ -1,0 +1,4 @@
+**/build/
+**/.vs*
+*.txt
+!CMakeLists.txt

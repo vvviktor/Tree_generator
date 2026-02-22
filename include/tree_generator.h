@@ -1,0 +1,29 @@
+#pragma once
+
+#include "dom.h"
+
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <random>
+#include <set>
+#include <vector>
+
+class TreeGenerator {
+   public:
+    explicit TreeGenerator(int n, int max_x, int max_y);
+
+    void PrintV(const std::vector<Vertice>& v) const;
+    void PrintDFS_I(std::unique_ptr<TreeNode>& root) const;
+    void PrintDFS_P(std::unique_ptr<TreeNode>& root) const;
+    std::unique_ptr<TreeNode> GenerateRandom();
+
+   private:
+    int n_, max_x_, max_y_;
+
+    std::vector<Vertice> GenVertices();
+    std::unique_ptr<TreeNode> BuildTree(const std::vector<Vertice>& v);
+    std::unique_ptr<TreeNode> DFS(const std::vector<Vertice>& sorted,
+                                  const std::vector<int>& l_ch,
+                                  const std::vector<int>& r_ch, int r);
+};
