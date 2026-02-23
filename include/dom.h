@@ -15,10 +15,17 @@ struct Vertice {
 
 struct TreeNode {
     TreeNode(const Vertice& vert, std::unique_ptr<TreeNode> l,
-             std::unique_ptr<TreeNode> r)
-        : u(vert), left(std::move(l)), right(std::move(r)) {}
+             std::unique_ptr<TreeNode> r);
     Vertice u;
     std::unique_ptr<TreeNode> left = nullptr, right = nullptr;
+};
+
+struct TernNode {
+    TernNode(const Vertice& vert, std::unique_ptr<TernNode> l,
+             std::unique_ptr<TernNode> m, std::unique_ptr<TernNode> r);
+    Vertice u;
+    std::unique_ptr<TernNode> left = nullptr, mid = nullptr,
+                              right = nullptr;
 };
 
 struct RenderSettings {
