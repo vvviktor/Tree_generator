@@ -91,11 +91,11 @@ std::unique_ptr<TreeNode> TreeGenerator::BuildBinTree(
 }
 
 std::unique_ptr<TernNode> TreeGenerator::BuildTernTree(
-    const std::vector<Vertice>& v) {
+    const std::vector<Vertice>& v, int mid_size) {
     std::vector<Vertice> sorted = v;
     std::sort(sorted.begin(), sorted.end());
     std::vector<int> parent(n_, -1), l_ch(n_, -1), m_ch(n_, -1),
-        r_ch(n_, -1), size(n_, -1);
+        r_ch(n_, -1), size(n_, 1);
     int last = 0, root = 0;
     for (int i = 1; i < n_; ++i) {
         last = i - 1;
@@ -109,23 +109,29 @@ std::unique_ptr<TernNode> TreeGenerator::BuildTernTree(
         } else {
             if (m_ch[last] == -1) {
                 m_ch[last] = i;
-                parent[i] = last;
-            } /* else
-            if (m_ch[last] != -1) {
-                parent[m_ch[last]] = i;
-                l_ch[i] = m_ch[last];
-                m_ch[last] = i;
-                parent[i] = last;
-            }  */
-            else if (r_ch[last] != -1) {
-                parent[r_ch[last]] = i;
-                l_ch[i] = r_ch[last];
-                r_ch[last] = i;
-                parent[i] = last;
+            } else if (m_ch[last] != -1 && size[m_ch[last]] < mid_size) {
+                parent[m_ch[last]] = i;  // отцепляем среднего сына last
+                size[last] -=
+                    size[m_ch[last]];  // уменьшаем размер last на размер
+                                       // ее среднего сына
+                l_ch[i] = m_ch[last];  // вешаем среднего сына last под i
+                size[i] += size[m_ch[last]];  // увеличиваем размер i на
+                                              // размер среднего сына last
+                m_ch[last] = i;  // вешаем i средним сыном last
+            } else if (r_ch[last] != -1) {
+                parent[r_ch[last]] = i;  // отцепляем правого сына last
+                size[last] -=
+                    size[r_ch[last]];  // уменьшаем размер last на размер
+                                       // ее правого сына
+                l_ch[i] = r_ch[last];  // вешаем правого сына last под i
+                size[i] += size[r_ch[last]];  // увеличиваем размер i на
+                                              // размер правого сына last
+                r_ch[last] = i;               // вешаем i правым сыном last
             } else {
                 r_ch[last] = i;
-                parent[i] = last;
             }
+            size[last] += size[i];  // увеличиваем размер last на размер i
+            parent[i] = last;
         }
     }
     return DFS_Tern(sorted, l_ch, m_ch, r_ch, root);

@@ -19,7 +19,7 @@ class TreeGenerator {
     std::unique_ptr<TreeNode> GenerateRandom();
     std::vector<Vertice> GenVertices();
     std::unique_ptr<TreeNode> BuildBinTree(const std::vector<Vertice>& v);
-    std::unique_ptr<TernNode> BuildTernTree(const std::vector<Vertice>& v);
+    std::unique_ptr<TernNode> BuildTernTree(const std::vector<Vertice>& v, int mid_size);
 
    private:
     int n_, max_x_, max_y_;
