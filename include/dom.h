@@ -13,6 +13,13 @@ struct Vertice {
     }
 };
 
+struct MultNode {
+    MultNode(const Vertice& vert);
+
+    Vertice u;
+    std::vector<std::unique_ptr<MultNode>> ch;
+};
+
 struct TreeNode {
     TreeNode(const Vertice& vert, std::unique_ptr<TreeNode> l,
              std::unique_ptr<TreeNode> r);

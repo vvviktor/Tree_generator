@@ -6,6 +6,7 @@
 #include <random>
 #include <set>
 #include <vector>
+#include <limits>
 
 #include "dom.h"
 
@@ -18,12 +19,14 @@ class TreeGenerator {
     void PrintDFS_P(std::unique_ptr<TreeNode>& root) const;
     std::unique_ptr<TreeNode> GenerateRandom();
     std::vector<Vertice> GenVertices();
+    std::unique_ptr<MultNode> BuildBinFrom(const std::vector<Vertice>& v, int root);
     std::unique_ptr<TreeNode> BuildBinTree(const std::vector<Vertice>& v);
     std::unique_ptr<TernNode> BuildTernTree(const std::vector<Vertice>& v, int mid_size);
 
    private:
     int n_, max_x_, max_y_;
-
+    
+    std::unique_ptr<MultNode> DFS_From(const std::vector<Vertice> sorted, std::vector<int> vis, int parent);
     std::unique_ptr<TreeNode> DFS(const std::vector<Vertice>& sorted,
                                   const std::vector<int>& l_ch,
                                   const std::vector<int>& r_ch, int r);
