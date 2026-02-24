@@ -67,7 +67,7 @@ std::unique_ptr<MultNode> TreeGenerator::BuildBinFrom(
     const std::vector<Vertice>& v, int root) {
     std::vector<Vertice> sorted = v;
     int n = sorted.size();
-    return DFS_From(sorted, 0, n - 1, 0, 0);
+    return DFS_From(sorted, 0, n - 1, sorted[root].x, sorted[root].y);
 }
 
 std::unique_ptr<TreeNode> TreeGenerator::BuildBinTree(
@@ -144,32 +144,6 @@ std::unique_ptr<TernNode> TreeGenerator::BuildTernTree(
     return DFS_Tern(sorted, l_ch, m_ch, r_ch, root);
 }
 
-std::unique_ptr<MultNode> TreeGenerator::DFS_From(
-    std::vector<Vertice>& sorted, int first, int last, int o_x, int o_y) {
-    if (first > last) {
-        return nullptr;
-    }
-    SortByAngle(sorted, first, last, o_x, o_y);
-    //int min_d = std::numeric_limits<int>::max(), v = -1;
-    /* for (int c = first; c <= last; ++c) {
-        int x1 = o_x, y1 = o_y, x2 = sorted[c].x, y2 = sorted[c].y;
-        int sq_d = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
-        if (sq_d < min_d) {
-            min_d = sq_d;
-            v = c;
-        }
-    } */
-    int v = first;
-    std::unique_ptr<MultNode> curr = std::make_unique<MultNode>(sorted[v]);
-    ++first;
-    int mid = first + ((last - first) >> 1);
-    curr->ch.push_back(
-        DFS_From(sorted, first, mid, sorted[v].x, sorted[v].y));
-    curr->ch.push_back(
-        DFS_From(sorted, mid + 1, last, sorted[v].x, sorted[v].y));
-    return curr;
-}
-
 std::unique_ptr<TreeNode> TreeGenerator::DFS(
     const std::vector<Vertice>& sorted, const std::vector<int>& l_ch,
     const std::vector<int>& r_ch, int r) {
@@ -197,19 +171,39 @@ std::unique_ptr<TernNode> TreeGenerator::DFS_Tern(
     return curr;
 }
 
+std::unique_ptr<MultNode> TreeGenerator::DFS_From(
+    std::vector<Vertice>& sorted, int first, int last, int o_x, int o_y) {
+    if (first > last) {
+        return nullptr;
+    }
+    SortByAngle(sorted, first, last, o_x, o_y);
+    int min_d = std::numeric_limits<int>::max(), v = -1;
+    for (int c = first; c <= last; ++c) {
+        int x1 = o_x, y1 = o_y, x2 = sorted[c].x, y2 = sorted[c].y;
+        int sq_d = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+        if (sq_d < min_d) {
+            min_d = sq_d;
+            v = c;
+        }
+    }
+    std::unique_ptr<MultNode> curr = std::make_unique<MultNode>(sorted[v]);
+    curr->ch.push_back(
+        DFS_From(sorted, first, v - 1, sorted[v].x, sorted[v].y));
+    curr->ch.push_back(
+        DFS_From(sorted, v + 1, last, sorted[v].x, sorted[v].y));
+    return curr;
+}
+
 void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted, int first,
                                 int last, int o_x, int o_y) {
     auto comp = [this, o_x, o_y](const Vertice& lhs,
                                  const Vertice& rhs) -> bool {
-        int xd1 = lhs.x - o_x, yd1 = lhs.y - o_y, xd2 = rhs.x - o_x,
-            yd2 = rhs.y - o_y;
-        int cp = (xd1 * yd2 - yd1 * xd2);
+        long long xd1 = 1ll * lhs.x - o_x, yd1 = 1ll * lhs.y - o_y,
+                  xd2 = 1LL * rhs.x - o_x, yd2 = 1ll * rhs.y - o_y;
+        long long cp = (xd1 * yd2 - yd1 * xd2);
         long long sq_d1 = 1ll * xd1 * xd1 + 1ll * yd1 * yd1,
                   sq_d2 = 1ll * xd2 * xd2 + 1LL * yd2 * yd2;
-        int quad1 = GetQuadrant(xd1, yd1), quad2 = GetQuadrant(xd2, yd2);
-        return quad1 != quad2 ? quad1 < quad2
-               : cp != 0      ? cp > 0
-                              : sq_d1 < sq_d2;
+        return cp != 0 ? cp > 0 : sq_d1 < sq_d2;
     };
     std::sort(sorted.begin() + first, sorted.begin() + last + 1, comp);
 }
