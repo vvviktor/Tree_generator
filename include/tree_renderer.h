@@ -26,4 +26,6 @@ class TreeRenderer {
     void DFS_Tern_Render(svg::Document& doc,
                          const std::unique_ptr<TernNode>& root,
                          const std::unique_ptr<TernNode>& parent);
+
+    void ApplyDocSize(svg::Document& doc);
 };

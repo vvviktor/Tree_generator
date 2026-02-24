@@ -188,7 +188,12 @@ void Document::AddPtr(std::unique_ptr<Object>&& obj) {
 void Document::Render(std::ostream& out) const {
     RenderContext ctx(out, 2, 2);
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"sv << std::endl;
-    out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv
+    out << "<svg"sv;
+    if (width_ != -1 && height_ != -1) {
+        out << " width=\""sv << width_ << "\" height=\""sv << height_
+            << "\""sv;
+    }
+    out << " xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv
         << std::endl;
     if (!doc_data_.empty()) {
         for (const auto& obj_ptr : doc_data_) {
@@ -196,6 +201,16 @@ void Document::Render(std::ostream& out) const {
         }
     }
     out << "</svg>"sv;
+}
+
+Document& Document::SetWidth(int w) {
+    width_ = w;
+    return *this;
+}
+
+Document& Document::SetHeight(int h) {
+    height_ = h;
+    return *this;
 }
 
 }  // namespace svg

@@ -296,8 +296,12 @@ class Document final : public ObjectContainer {
     // Выводит в ostream svg-представление документа
     void Render(std::ostream& out) const;
 
+    Document& SetWidth(int w);
+    Document& SetHeight(int h);
+
    private:
     std::vector<std::unique_ptr<Object>> doc_data_;
+    int width_ = -1, height_ = -1;
 };
 
 }  // namespace svg

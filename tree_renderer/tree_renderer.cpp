@@ -6,6 +6,7 @@ TreeRenderer::TreeRenderer(const RenderSettings& render_settings)
 svg::Document TreeRenderer::Render_Bin(
     const std::unique_ptr<TreeNode>& root) {
     svg::Document doc;
+    ApplyDocSize(doc);
     DFS_Bin_Render(doc, root, nullptr);
     return doc;
 }
@@ -13,6 +14,7 @@ svg::Document TreeRenderer::Render_Bin(
 svg::Document TreeRenderer::Render_Tern(
     const std::unique_ptr<TernNode>& root) {
     svg::Document doc;
+    ApplyDocSize(doc);
     DFS_Tern_Render(doc, root, nullptr);
     return doc;
 }
@@ -20,6 +22,7 @@ svg::Document TreeRenderer::Render_Tern(
 svg::Document TreeRenderer::RenderOmni(
     const std::unique_ptr<MultNode>& root) {
     svg::Document doc;
+    ApplyDocSize(doc);
     DFS_Omni(doc, root, nullptr);
     return doc;
 }
@@ -118,4 +121,9 @@ void TreeRenderer::DFS_Tern_Render(
         .SetRadius(render_settings_.node_radius)
         .SetFillColor(render_settings_.node_color);
     doc.Add(node);
+}
+
+void TreeRenderer::ApplyDocSize(svg::Document& doc) {
+    doc.SetWidth(render_settings_.max_x + render_settings_.padding * 2)
+        .SetHeight(render_settings_.max_y + render_settings_.padding * 2);
 }
