@@ -1,5 +1,11 @@
 #include "dom.h"
 
+Vertice& Vertice::operator=(const Vertice& rhs) {
+    x = rhs.x;
+    y = rhs.y;
+    return *this;
+}
+
 MultNode::MultNode(const Vertice& vert) : u(vert) {}
 
 TreeNode::TreeNode(const Vertice& vert, std::unique_ptr<TreeNode> l,

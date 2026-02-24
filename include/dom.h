@@ -6,7 +6,7 @@
 #include "svg.h"
 
 struct Vertice {
-    int x = 0, y = 0, i = 0;
+    int x = 0, y = 0;
 
     constexpr bool operator<(const Vertice& rhs) const {
         return std::tie(x, y) < std::tie(rhs.x, rhs.y);
@@ -15,6 +15,12 @@ struct Vertice {
     constexpr bool operator==(const Vertice& rhs) const {
         return std::tie(x, y) == std::tie(rhs.x, rhs.y);
     }
+
+    constexpr Vertice operator-() const {
+        return {-x, -y};
+    }
+
+    Vertice& operator=(const Vertice& rhs);
 };
 
 struct MultNode {

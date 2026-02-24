@@ -17,26 +17,6 @@ void TreeGenerator::PrintV(const std::vector<Vertice>& v) const {
     std::cout << "]\n";
 }
 
-void TreeGenerator::PrintDFS_I(std::unique_ptr<TreeNode>& root) const {
-    if (!root) {
-        std::cout << "-1,";
-        return;
-    }
-    PrintDFS_I(root->left);
-    std::cout << root->u.i << ',';
-    PrintDFS_I(root->right);
-}
-
-void TreeGenerator::PrintDFS_P(std::unique_ptr<TreeNode>& root) const {
-    if (!root) {
-        std::cout << "-1,";
-        return;
-    }
-    PrintDFS_P(root->left);
-    PrintDFS_P(root->right);
-    std::cout << root->u.i << ',';
-}
-
 std::unique_ptr<TreeNode> TreeGenerator::GenerateRandom() {
     return BuildBinTree(GenVertices());
 }
@@ -48,7 +28,6 @@ std::vector<Vertice> TreeGenerator::GenVertices() {
         distr_y(0, max_y_);
     std::vector<Vertice> v(n_);
     std::set<Vertice> seen;
-    int i = 0;
     for (auto& vert : v) {
         int x = distr_x(g), y = distr_y(g);
         while (seen.find({x, y}) != seen.end()) {
@@ -58,7 +37,6 @@ std::vector<Vertice> TreeGenerator::GenVertices() {
         seen.insert({x, y});
         vert.x = x;
         vert.y = y;
-        vert.i = i++;
     }
     return v;
 }
@@ -67,11 +45,10 @@ std::unique_ptr<MultNode> TreeGenerator::BuildBinFrom(
     const std::vector<Vertice>& v, int root) {
     std::vector<Vertice> sorted = v;
     int n = sorted.size();
-    Vertice azimuth;
-    azimuth.x = -1;
-    azimuth.y = -1;  // negative (must be out of border) coords for
-                     // correct first partition!
     Vertice vroot = sorted[root];
+    Vertice azimuth = -vroot;  // negative (must be out of border) coords
+                               // for correct first partition!
+
     SortByAngle(sorted, 0, n - 1, azimuth);
     int root_idx = -1;
     for (int i = 0; i < n; ++i) {
