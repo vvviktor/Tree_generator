@@ -67,10 +67,12 @@ std::unique_ptr<MultNode> TreeGenerator::BuildBinFrom(
     const std::vector<Vertice>& v, int root) {
     std::vector<Vertice> sorted = v;
     int n = sorted.size();
+    Vertice azimuth;
+    azimuth.x = -1;
+    azimuth.y = -1;  // negative (must be out of border) coords for
+                     // correct first partition!
     Vertice vroot = sorted[root];
-    int asimuth = FindNearestIdx(sorted, 0, n - 1, vroot);
-    Vertice vasimuth = sorted[asimuth];
-    SortByAngle(sorted, 0, n - 1, vasimuth);
+    SortByAngle(sorted, 0, n - 1, azimuth);
     int root_idx = -1;
     for (int i = 0; i < n; ++i) {
         if (sorted[i] == vroot) {
