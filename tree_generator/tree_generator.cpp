@@ -66,30 +66,8 @@ std::vector<Vertice> TreeGenerator::GenVertices() {
 std::unique_ptr<MultNode> TreeGenerator::BuildBinFrom(
     const std::vector<Vertice>& v, int root) {
     std::vector<Vertice> sorted = v;
-    std::sort(sorted.begin(), sorted.end(),
-              [&v, root](const Vertice& lhs, const Vertice& rhs) {
-                  int xd1 = lhs.x - v[root].x, yd1 = lhs.y - v[root].y,
-                      xd2 = rhs.x - v[root].x, yd2 = rhs.y - v[root].y;
-                  int cp = (xd1 * yd2 - yd1 * xd2);
-                  int sq_d1 = xd1 * xd1 + yd1 * yd1,
-                      sq_d2 = xd2 * xd2 + yd2 * yd2;
-                  return cp == 0 ? sq_d1 < sq_d2 : cp < 0;
-              });
-    std::unique_ptr<MultNode> r = std::make_unique<MultNode>(v[root]);
-    int u = 0, n = sorted.size();
-    for (int i = 0; i < n; ++i) {
-        if (sorted[i].i == root) {
-            u = i;
-            break;
-        }
-    }
-    std::vector<int> vis(n);
-    vis[u] = 1;
-    std::vector<Vertice> l_part(sorted.begin(), sorted.begin() + u),
-        r_part(sorted.begin() + u + 1, sorted.end());
-    r->ch.push_back(DFS_From(l_part, vis, u));
-    r->ch.push_back(DFS_From(r_part, vis, u));
-    return r;
+    int n = sorted.size();
+    return DFS_From(sorted, 0, n - 1, sorted[root].x, sorted[root].y);
 }
 
 std::unique_ptr<TreeNode> TreeGenerator::BuildBinTree(
@@ -167,49 +145,33 @@ std::unique_ptr<TernNode> TreeGenerator::BuildTernTree(
 }
 
 std::unique_ptr<MultNode> TreeGenerator::DFS_From(
-    const std::vector<Vertice> sorted, std::vector<int> vis, int parent) {
-    if (sorted.empty()) {
+    std::vector<Vertice>& sorted, int first, int last, int o_x, int o_y) {
+    if (first > last) {
         return nullptr;
     }
-    int min_d = std::numeric_limits<int>::max(), v = -1, n = sorted.size();
-    for (int c = 0; c < n; ++c) {
-        if (c == parent || vis[sorted[c].i] == 1) {
-            continue;
-        }
-        int x1 = sorted[parent].x, y1 = sorted[parent].y, x2 = sorted[c].x,
-            y2 = sorted[c].y;
+    std::sort(sorted.begin() + first, sorted.begin() + last + 1,
+              [o_x, o_y](const Vertice& lhs, const Vertice& rhs) {
+                  int xd1 = lhs.x - o_x, yd1 = lhs.y - o_y,
+                      xd2 = rhs.x - o_x, yd2 = rhs.y - o_y;
+                  int cp = (xd1 * yd2 - yd1 * xd2);
+                  int sq_d1 = xd1 * xd1 + yd1 * yd1,
+                      sq_d2 = xd2 * xd2 + yd2 * yd2;
+                  return cp == 0 ? sq_d1 < sq_d2 : cp < 0;
+              });
+    int min_d = std::numeric_limits<int>::max(), v = -1;
+    for (int c = first; c <= last; ++c) {
+        int x1 = o_x, y1 = o_y, x2 = sorted[c].x, y2 = sorted[c].y;
         int sq_d = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
         if (sq_d < min_d) {
             min_d = sq_d;
             v = c;
         }
     }
-    if (v == -1) {
-        return nullptr;
-    }
-    std::vector<Vertice> next_sort = sorted;
-    std::sort(next_sort.begin(), next_sort.end(),
-              [&sorted, parent](const Vertice& lhs, const Vertice& rhs) {
-                  int xd1 = lhs.x - sorted[parent].x, yd1 = lhs.y - sorted[parent].y,
-                      xd2 = rhs.x - sorted[parent].x, yd2 = rhs.y - sorted[parent].y;
-                  int cp = (xd1 * yd2 - yd1 * xd2);
-                  int sq_d1 = xd1 * xd1 + yd1 * yd1,
-                      sq_d2 = xd2 * xd2 + yd2 * yd2;
-                  return cp == 0 ? sq_d1 < sq_d2 : cp < 0;
-              });
-    int v_id = sorted[v].i;
-    for (int i = 0; i < n; ++i) {
-        if (next_sort[i].i == v_id) {
-            v = i;
-            break;
-        }
-    }
-    vis[v_id] = 1;
-    std::unique_ptr<MultNode> curr = std::make_unique<MultNode>(next_sort[v]);
-    std::vector<Vertice> l_part(next_sort.begin(), next_sort.begin() + v),
-        r_part(next_sort.begin() + v + 1, next_sort.end());
-    curr->ch.push_back(DFS_From(l_part, vis, v));
-    curr->ch.push_back(DFS_From(r_part, vis, v));
+    std::unique_ptr<MultNode> curr = std::make_unique<MultNode>(sorted[v]);
+    curr->ch.push_back(
+        DFS_From(sorted, first, v - 1, sorted[v].x, sorted[v].y));
+    curr->ch.push_back(
+        DFS_From(sorted, v + 1, last, sorted[v].x, sorted[v].y));
     return curr;
 }
 

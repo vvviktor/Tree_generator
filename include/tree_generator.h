@@ -26,7 +26,7 @@ class TreeGenerator {
    private:
     int n_, max_x_, max_y_;
     
-    std::unique_ptr<MultNode> DFS_From(const std::vector<Vertice> sorted, std::vector<int> vis, int parent);
+    std::unique_ptr<MultNode> DFS_From(std::vector<Vertice>& sorted, int first, int last, int o_x, int o_y);
     std::unique_ptr<TreeNode> DFS(const std::vector<Vertice>& sorted,
                                   const std::vector<int>& l_ch,
                                   const std::vector<int>& r_ch, int r);
