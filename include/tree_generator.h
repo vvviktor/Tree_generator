@@ -12,11 +12,9 @@
 
 class TreeGenerator {
    public:
-    explicit TreeGenerator(int n, int max_x, int max_y);
+    TreeGenerator(int n, int max_x, int max_y);
 
     void PrintV(const std::vector<Vertice>& v) const;
-    void PrintDFS_I(std::unique_ptr<TreeNode>& root) const;
-    void PrintDFS_P(std::unique_ptr<TreeNode>& root) const;
     std::unique_ptr<TreeNode> GenerateRandom();
     std::vector<Vertice> GenVertices();
     std::unique_ptr<MultNode> BuildBinFrom(const std::vector<Vertice>& v,
