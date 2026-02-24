@@ -35,4 +35,7 @@ class TreeGenerator {
                                        const std::vector<int>& m_ch,
                                        const std::vector<int>& r_ch,
                                        int r);
+
+      void SortByAngle(std::vector<Vertice>& sorted, int first, int last, int o_x, int o_y);
+      int GetQuadrant(int x, int y);
 };
