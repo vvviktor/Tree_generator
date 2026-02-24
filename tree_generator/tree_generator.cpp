@@ -207,11 +207,3 @@ void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted, int first,
     };
     std::sort(sorted.begin() + first, sorted.begin() + last + 1, comp);
 }
-
-int TreeGenerator::GetQuadrant(int x, int y) {
-    if (x > 0 && y >= 0) return 0;
-    if (x <= 0 && y > 0) return 1;
-    if (x < 0 && y <= 0) return 2;
-    if (x >= 0 && y < 0) return 3;
-    return 0;
-}
