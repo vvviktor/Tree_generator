@@ -67,7 +67,8 @@ std::unique_ptr<MultNode> TreeGenerator::BuildBinFrom(
     const std::vector<Vertice>& v, int root) {
     std::vector<Vertice> sorted = v;
     int n = sorted.size();
-    return DFS_From(sorted, 0, n - 1, sorted[root].x, sorted[root].y);
+    return DFS_From(sorted, /* 0, n - 1,  */ sorted[root].x,
+                    sorted[root].y);
 }
 
 std::unique_ptr<TreeNode> TreeGenerator::BuildBinTree(
@@ -172,13 +173,14 @@ std::unique_ptr<TernNode> TreeGenerator::DFS_Tern(
 }
 
 std::unique_ptr<MultNode> TreeGenerator::DFS_From(
-    std::vector<Vertice>& sorted, int first, int last, int o_x, int o_y) {
-    if (first > last) {
+    std::vector<Vertice> sorted, /* int first, int last, */ int o_x,
+    int o_y) {
+    if (sorted.empty()) {
         return nullptr;
     }
-    SortByAngle(sorted, first, last, o_x, o_y);
-    int min_d = std::numeric_limits<int>::max(), v = -1;
-    for (int c = first; c <= last; ++c) {
+    SortByAngle(sorted, /* first, last, */ o_x, o_y);
+    int min_d = std::numeric_limits<int>::max(), v = -1, n = sorted.size();
+    for (int c = 0; c < n; ++c) {
         int x1 = o_x, y1 = o_y, x2 = sorted[c].x, y2 = sorted[c].y;
         int sq_d = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
         if (sq_d < min_d) {
@@ -187,15 +189,18 @@ std::unique_ptr<MultNode> TreeGenerator::DFS_From(
         }
     }
     std::unique_ptr<MultNode> curr = std::make_unique<MultNode>(sorted[v]);
+    std::vector<Vertice> l_part(sorted.begin(), sorted.begin() + v),
+        r_part(sorted.begin() + v + 1, sorted.end());
     curr->ch.push_back(
-        DFS_From(sorted, first, v - 1, sorted[v].x, sorted[v].y));
+        DFS_From(l_part, /* first, v - 1,  */ sorted[v].x, sorted[v].y));
     curr->ch.push_back(
-        DFS_From(sorted, v + 1, last, sorted[v].x, sorted[v].y));
+        DFS_From(r_part, /* v + 1, last,  */ sorted[v].x, sorted[v].y));
     return curr;
 }
 
-void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted, int first,
-                                int last, int o_x, int o_y) {
+void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted,
+                                /* int first,
+  int last, */ int o_x, int o_y) {
     auto comp = [this, o_x, o_y](const Vertice& lhs,
                                  const Vertice& rhs) -> bool {
         long long xd1 = 1ll * lhs.x - o_x, yd1 = 1ll * lhs.y - o_y,
@@ -205,7 +210,7 @@ void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted, int first,
                   sq_d2 = 1ll * xd2 * xd2 + 1LL * yd2 * yd2;
         return cp != 0 ? cp > 0 : sq_d1 < sq_d2;
     };
-    std::sort(sorted.begin() + first, sorted.begin() + last + 1, comp);
+    std::sort(sorted.begin(), sorted.end(), comp);
 }
 
 int TreeGenerator::GetQuadrant(int x, int y) {

@@ -35,6 +35,8 @@ void TreeRenderer::DFS_Omni(svg::Document& doc,
     }
     svg::Point this_node(root->u.x, render_settings_.max_y - root->u.y +
                                         render_settings_.padding);
+    svg::Circle node;
+    node.SetCenter(this_node).SetRadius(render_settings_.node_radius);
     if (parent) {
         svg::Point parent_node(parent->u.x, render_settings_.max_y -
                                                 parent->u.y +
@@ -47,11 +49,10 @@ void TreeRenderer::DFS_Omni(svg::Document& doc,
             .SetStrokeLineCap(render_settings_.line_cap)
             .SetStrokeLineJoin(render_settings_.line_join);
         doc.Add(edge);
+        node.SetFillColor(render_settings_.node_color);
+    } else {
+        node.SetFillColor(svg::Rgb(255, 0, 0));
     }
-    svg::Circle node;
-    node.SetCenter(this_node)
-        .SetRadius(render_settings_.node_radius)
-        .SetFillColor(render_settings_.node_color);
     doc.Add(node);
 }
 
