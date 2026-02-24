@@ -11,6 +11,10 @@ struct Vertice {
     constexpr bool operator<(const Vertice& rhs) const {
         return std::tie(x, y) < std::tie(rhs.x, rhs.y);
     }
+
+    constexpr bool operator==(const Vertice& rhs) const {
+        return std::tie(x, y) == std::tie(rhs.x, rhs.y);
+    }
 };
 
 struct MultNode {
