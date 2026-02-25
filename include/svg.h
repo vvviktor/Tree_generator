@@ -14,9 +14,7 @@ namespace svg {
 
 struct Rgb {
     Rgb() = default;
-
-    Rgb(uint8_t red, uint8_t green, uint8_t blue)
-        : red(red), green(green), blue(blue) {}
+    Rgb(uint8_t red, uint8_t green, uint8_t blue);
 
     uint8_t red = 0;
     uint8_t green = 0;
@@ -25,9 +23,7 @@ struct Rgb {
 
 struct Rgba {
     Rgba() = default;
-
-    Rgba(uint8_t red, uint8_t green, uint8_t blue, double opacity)
-        : red(red), green(green), blue(blue), opacity(opacity) {}
+    Rgba(uint8_t red, uint8_t green, uint8_t blue, double opacity);
 
     uint8_t red = 0;
     uint8_t green = 0;
@@ -51,22 +47,10 @@ inline const Color NoneColor{"none"};
 struct ColorDataPrinter {
     std::ostream& out;
 
-    void operator()(std::monostate) const {
-        using namespace std::literals;
-        out << "none"sv;
-    }
-
-    void operator()(const std::string& color) const {
-        out << color;
-    }
-
-    void operator()(Rgb color) const {
-        out << color;
-    }
-
-    void operator()(Rgba color) const {
-        out << color;
-    }
+    void operator()(std::monostate) const;
+    void operator()(const std::string& color) const;
+    void operator()(Rgb color) const;
+    void operator()(Rgba color) const;
 };
 
 std::ostream& operator<<(std::ostream& out, Color color);
@@ -154,10 +138,11 @@ class PathProps {
     std::optional<StrokeLineJoin> stroke_line_join_;
 };
 
+
+
 struct Point {
     Point() = default;
-
-    Point(double x, double y) : x(x), y(y) {}
+    Point(double x, double y);
 
     double x = 0;
     double y = 0;
@@ -169,20 +154,11 @@ struct Point {
  * при выводе элемента
  */
 struct RenderContext {
-    RenderContext(std::ostream& out) : out(out) {}
+    RenderContext(std::ostream& out);
+    RenderContext(std::ostream& out, int indent_step, int indent);
 
-    RenderContext(std::ostream& out, int indent_step, int indent = 0)
-        : out(out), indent_step(indent_step), indent(indent) {}
-
-    RenderContext Indented() const {
-        return {out, indent_step, indent + indent_step};
-    }
-
-    void RenderIndent() const {
-        for (int i = 0; i < indent; ++i) {
-            out.put(' ');
-        }
-    }
+    RenderContext Indented() const;
+    void RenderIndent() const;
 
     std::ostream& out;
     int indent_step = 0;

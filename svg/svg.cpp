@@ -4,6 +4,12 @@ namespace svg {
 
 using namespace std::literals;
 
+Rgb::Rgb(uint8_t red, uint8_t green, uint8_t blue)
+    : red(red), green(green), blue(blue) {}
+
+Rgba::Rgba(uint8_t red, uint8_t green, uint8_t blue, double opacity)
+    : red(red), green(green), blue(blue), opacity(opacity) {}
+
 std::ostream& operator<<(std::ostream& out, Rgb color) {
     out << "rgb("sv << (unsigned short)color.red << ","sv
         << (unsigned short)color.green << ","sv
@@ -57,6 +63,40 @@ std::ostream& operator<<(std::ostream& out, StrokeLineJoin line_join) {
             break;
     }
     return out;
+}
+
+void ColorDataPrinter::operator()(std::monostate) const {
+    out << "none"sv;
+}
+
+void ColorDataPrinter::operator()(const std::string& color) const {
+    out << color;
+}
+
+void ColorDataPrinter::operator()(Rgb color) const {
+    out << color;
+}
+
+void ColorDataPrinter::operator()(Rgba color) const {
+    out << color;
+}
+
+Point::Point(double x, double y) : x(x), y(y) {}
+
+RenderContext::RenderContext(std::ostream& out) : out(out) {}
+
+RenderContext::RenderContext(std::ostream& out, int indent_step,
+                             int indent)
+    : out(out), indent_step(indent_step), indent(indent) {}
+
+RenderContext RenderContext::Indented() const {
+    return {out, indent_step, indent + indent_step};
+}
+
+void RenderContext::RenderIndent() const {
+    for (int i = 0; i < indent; ++i) {
+        out.put(' ');
+    }
 }
 
 void Object::Render(const RenderContext& context) const {
