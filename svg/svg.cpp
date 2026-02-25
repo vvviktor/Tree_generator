@@ -81,6 +81,18 @@ void ColorDataPrinter::operator()(Rgba color) const {
     out << color;
 }
 
+std::ostream& operator<<(std::ostream& out, AnimationFill fill) {
+    switch (fill) {
+        case AnimationFill::FREEZE:
+            out << "freeze"sv;
+            break;
+        case AnimationFill::REMOVE:
+            out << "remove"sv;
+            break;
+    }
+    return out;
+}
+
 Point::Point(double x, double y) : x(x), y(y) {}
 
 RenderContext::RenderContext(std::ostream& out) : out(out) {}
@@ -149,6 +161,34 @@ void Polyline::RenderObject(const svg::RenderContext& context) const {
     out << "\" "sv;
     RenderAttrs(out);
     out << "/>"sv;
+}
+
+Line& Line::SetA(Point a) {
+    a_ = a;
+    return *this;
+}
+
+Line& Line::SetB(Point b) {
+    b_ = b;
+    return *this;
+}
+
+void Line::RenderHeader(const RenderContext& context) const {
+    auto& out = context.out;
+    out << "<line x1=\""sv << a_.x << "\" y1=\""sv << a_.y << "\" x2=\""sv
+        << b_.x << "\" y2=\""sv << b_.y << "\" "sv;
+    RenderAttrs(out);
+    out << ">"sv;
+}
+
+void Line::RenderCloseTag(const RenderContext& context) const {
+    auto& out = context.out;
+    out << "</line>";
+}
+
+void Line::RenderObject(const RenderContext& context) const {
+    RenderHeader(context);
+    RenderCloseTag(context);
 }
 
 Text& Text::SetPosition(svg::Point pos) {

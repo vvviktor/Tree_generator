@@ -45,13 +45,12 @@ void TreeRenderer::DFS_Omni(svg::Document& doc,
         svg::Point parent_node(parent->u.x + render_settings_.padding,
                                render_settings_.max_y - parent->u.y +
                                    render_settings_.padding);
-        svg::Polyline edge;
-        edge.AddPoint(this_node)
-            .AddPoint(parent_node)
+        svg::Line edge;
+        edge.SetB(this_node)
+            .SetA(parent_node)
             .SetStrokeColor(render_settings_.edge_color)
             .SetStrokeWidth(render_settings_.edge_width)
-            .SetStrokeLineCap(render_settings_.line_cap)
-            .SetStrokeLineJoin(render_settings_.line_join);
+            .SetStrokeLineCap(render_settings_.line_cap);
         doc.Add(edge);
         node.SetFillColor(render_settings_.node_color);
     } else {

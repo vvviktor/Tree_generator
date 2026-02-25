@@ -76,69 +76,177 @@ std::ostream& operator<<(std::ostream& out, StrokeLineJoin line_join);
 template <typename Owner>
 class PathProps {
    public:
-    Owner& SetFillColor(Color color) {
-        fill_color_ = std::move(color);
-        return AsOwner();
-    }
-
-    Owner& SetStrokeColor(Color color) {
-        stroke_color_ = std::move(color);
-        return AsOwner();
-    }
-
-    Owner& SetStrokeWidth(double width) {
-        stroke_width_ = width;
-        return AsOwner();
-    }
-
-    Owner& SetStrokeLineCap(StrokeLineCap line_cap) {
-        stroke_line_cap_ = line_cap;
-        return AsOwner();
-    }
-
-    Owner& SetStrokeLineJoin(StrokeLineJoin line_join) {
-        stroke_line_join_ = line_join;
-        return AsOwner();
-    }
+    Owner& SetFillColor(Color color);
+    Owner& SetStrokeColor(Color color);
+    Owner& SetStrokeWidth(double width);
+    Owner& SetStrokeLineCap(StrokeLineCap line_cap);
+    Owner& SetStrokeLineJoin(StrokeLineJoin line_join);
 
    protected:
     ~PathProps() = default;
 
-    void RenderAttrs(std::ostream& out) const {
-        using namespace std::literals;
-
-        if (fill_color_) {
-            out << "fill=\""sv << *fill_color_ << "\" "sv;
-        }
-        if (stroke_color_) {
-            out << "stroke=\""sv << *stroke_color_ << "\" "sv;
-        }
-        if (stroke_width_) {
-            out << "stroke-width=\""sv << *stroke_width_ << "\" "sv;
-        }
-        if (stroke_line_cap_) {
-            out << "stroke-linecap=\""sv << *stroke_line_cap_ << "\" "sv;
-        }
-        if (stroke_line_join_) {
-            out << "stroke-linejoin=\""sv << *stroke_line_join_ << "\" "sv;
-        }
-    }
+    void RenderAttrs(std::ostream& out) const;
 
    private:
-    Owner& AsOwner() {
-        // static_cast безопасно преобразует *this к Owner&,
-        // если класс Owner — наследник PathProps
-        return static_cast<Owner&>(*this);
-    }
-
     std::optional<Color> fill_color_;
     std::optional<Color> stroke_color_;
     std::optional<double> stroke_width_;
     std::optional<StrokeLineCap> stroke_line_cap_;
     std::optional<StrokeLineJoin> stroke_line_join_;
+
+    Owner& AsOwner();
 };
 
+template <typename Owner>
+Owner& PathProps<Owner>::SetFillColor(Color color) {
+    fill_color_ = std::move(color);
+    return AsOwner();
+}
 
+template <typename Owner>
+Owner& PathProps<Owner>::SetStrokeColor(Color color) {
+    stroke_color_ = std::move(color);
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& PathProps<Owner>::SetStrokeWidth(double width) {
+    stroke_width_ = width;
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& PathProps<Owner>::SetStrokeLineCap(StrokeLineCap line_cap) {
+    stroke_line_cap_ = line_cap;
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& PathProps<Owner>::SetStrokeLineJoin(StrokeLineJoin line_join) {
+    stroke_line_join_ = line_join;
+    return AsOwner();
+}
+
+template <typename Owner>
+void PathProps<Owner>::RenderAttrs(std::ostream& out) const {
+    using namespace std::literals;
+
+    if (fill_color_) {
+        out << "fill=\""sv << *fill_color_ << "\" "sv;
+    }
+    if (stroke_color_) {
+        out << "stroke=\""sv << *stroke_color_ << "\" "sv;
+    }
+    if (stroke_width_) {
+        out << "stroke-width=\""sv << *stroke_width_ << "\" "sv;
+    }
+    if (stroke_line_cap_) {
+        out << "stroke-linecap=\""sv << *stroke_line_cap_ << "\" "sv;
+    }
+    if (stroke_line_join_) {
+        out << "stroke-linejoin=\""sv << *stroke_line_join_ << "\" "sv;
+    }
+}
+
+template <typename Owner>
+Owner& PathProps<Owner>::AsOwner() {
+    // static_cast безопасно преобразует *this к Owner&,
+    // если класс Owner — наследник PathProps
+    return static_cast<Owner&>(*this);
+}
+
+enum class AnimationFill {
+    FREEZE,
+    REMOVE,
+};
+
+std::ostream& operator<<(std::ostream& out, AnimationFill fill);
+
+template <typename Owner>
+class AnimationProps {
+   public:
+    Owner& SetFrom(double from);
+    Owner& SetTo(double to);
+    Owner& SetDur(double dur);
+    Owner& SetBegin(double begin);
+    Owner& SetEnd(double end);
+    Owner& SetFill(AnimationFill fill);
+
+   protected:
+    ~AnimationProps() = default;
+    void RenderAttrs(std::ostream& out) const;
+
+   private:
+    std::optional<double> from_, to_, dur_, begin_, end_;
+    std::optional<AnimationFill> fill_;
+
+    Owner& AsOwner();
+};
+
+template <typename Owner>
+Owner& AnimationProps<Owner>::SetFrom(double from) {
+    from_ = from;
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& AnimationProps<Owner>::SetTo(double to) {
+    to_ = to;
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& AnimationProps<Owner>::SetDur(double dur) {
+    dur_ = dur;
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& AnimationProps<Owner>::SetBegin(double begin) {
+    begin_ = begin;
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& AnimationProps<Owner>::SetEnd(double end) {
+    end_ = end;
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& AnimationProps<Owner>::SetFill(AnimationFill fill) {
+    fill_ = fill;
+    return AsOwner();
+}
+
+template <typename Owner>
+void AnimationProps<Owner>::RenderAttrs(std::ostream& out) const {
+    using namespace std::literals;
+
+    if (from_) {
+        out << "from=\""sv << *from_ << "\" "sv;
+    }
+    if (to_) {
+        out << "to=\""sv << *to_ << "\" "sv;
+    }
+    if (dur_) {
+        out << "dur=\""sv << *dur_ << "\" "sv;
+    }
+    if (begin_) {
+        out << "begin=\""sv << *begin_ << "\" "sv;
+    }
+    if (end_) {
+        out << "end=\""sv << *end_ << "\" "sv;
+    }
+    if (fill_) {
+        out << "fill=\""sv << *fill_ << "\" "sv;
+    }
+}
+
+template <typename Owner>
+Owner& AnimationProps<Owner>::AsOwner() {
+    return static_cast<Owner&>(*this);
+}
 
 struct Point {
     Point() = default;
@@ -202,14 +310,13 @@ void ObjectContainer::Add(T obj) {
 class Circle final : public Object, public PathProps<Circle> {
    public:
     Circle& SetCenter(Point center);
-
     Circle& SetRadius(double radius);
 
    private:
-    void RenderObject(const RenderContext& context) const override;
-
     Point center_;
     double radius_ = 1.0;
+
+    void RenderObject(const RenderContext& context) const override;
 };
 
 /*
@@ -222,9 +329,24 @@ class Polyline final : public Object, public PathProps<Polyline> {
     Polyline& AddPoint(Point point);
 
    private:
-    void RenderObject(const RenderContext& context) const override;
-
     std::vector<Point> points_;
+
+    void RenderObject(const RenderContext& context) const override;
+};
+
+class Line : public Object, public PathProps<Line> {
+   public:
+    Line& SetA(Point a);
+    Line& SetB(Point b);
+
+   protected:
+    void RenderHeader(const RenderContext& context) const;
+    void RenderCloseTag(const RenderContext& context) const;
+
+   private:
+    Point a_, b_;
+
+    void RenderObject(const RenderContext& context) const override;
 };
 
 /*
@@ -252,14 +374,14 @@ class Text final : public Object, public PathProps<Text> {
     Text& SetData(std::string data);
 
    private:
-    void RenderObject(const RenderContext& context) const override;
-
     Point pos_;
     Point offset_;
     uint32_t font_size_ = 1;
     std::string font_family_;
     std::string font_weight_;
     std::string data_;
+
+    void RenderObject(const RenderContext& context) const override;
 };
 
 class Document final : public ObjectContainer {
