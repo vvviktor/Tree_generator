@@ -296,8 +296,6 @@ void Document::Render(std::ostream& out) const {
     }
     out << " xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv
         << std::endl;
-    RenderContext bg_ctx = ctx.Indented();
-    bg_ctx.RenderIndent();
     out << "<rect width=\"100%\" height=\"100%\" fill=\""sv
         << background_color_ << "\"/>\n"sv;
     if (!doc_data_.empty()) {
