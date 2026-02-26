@@ -173,11 +173,12 @@ Line& Line::SetB(Point b) {
     return *this;
 }
 
-void Line::RenderHeader(const RenderContext& context) const {
+void Line::RenderHeader(const RenderContext& context, Point from,
+                        Point to) const {
     using namespace std::literals;
     auto& out = context.out;
-    out << "<line x1=\""sv << a_.x << "\" y1=\""sv << a_.y << "\" x2=\""sv
-        << b_.x << "\" y2=\""sv << b_.y << "\" "sv;
+    out << "<line x1=\""sv << from.x << "\" y1=\""sv << from.y
+        << "\" x2=\""sv << to.x << "\" y2=\""sv << to.y << "\" "sv;
     this->RenderAttrs(out);
     out << ">"sv;
 }
@@ -188,13 +189,13 @@ void Line::RenderCloseTag(const RenderContext& context) const {
 }
 
 void Line::RenderObject(const RenderContext& context) const {
-    RenderHeader(context);
+    RenderHeader(context, a_, b_);
     RenderCloseTag(context);
 }
 
 void AnimatedLine::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
-    RenderHeader(context);
+    RenderHeader(context, a_, a_);
     out << '\n';
     RenderContext inner = context.Indented();
     inner.RenderIndent();
@@ -295,6 +296,10 @@ void Document::Render(std::ostream& out) const {
     }
     out << " xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv
         << std::endl;
+    RenderContext bg_ctx = ctx.Indented();
+    bg_ctx.RenderIndent();
+    out << "<rect width=\"100%\" height=\"100%\" fill=\""sv
+        << background_color_ << "\"/>\n"sv;
     if (!doc_data_.empty()) {
         for (const auto& obj_ptr : doc_data_) {
             obj_ptr->Render(ctx);
@@ -310,6 +315,11 @@ Document& Document::SetWidth(int w) {
 
 Document& Document::SetHeight(int h) {
     height_ = h;
+    return *this;
+}
+
+Document& Document::SetBackgroundColor(Color color) {
+    background_color_ = color;
     return *this;
 }
 

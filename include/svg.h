@@ -342,7 +342,8 @@ class Line : public Object,
 
    protected:
     Point a_, b_;
-    void RenderHeader(const RenderContext& context) const;
+    void RenderHeader(const RenderContext& context, Point from,
+                      Point to) const;
     void RenderCloseTag(const RenderContext& context) const;
 
    private:
@@ -401,10 +402,12 @@ class Document final : public ObjectContainer {
 
     Document& SetWidth(int w);
     Document& SetHeight(int h);
+    Document& SetBackgroundColor(Color color);
 
    private:
     std::vector<std::unique_ptr<Object>> doc_data_;
     int width_ = -1, height_ = -1;
+    Color background_color_;
 };
 
 }  // namespace svg

@@ -17,7 +17,7 @@ class TreeGenerator {
     void PrintV(const std::vector<Vertice>& v) const;
     std::unique_ptr<TreeNode> GenerateRandom();
     std::vector<Vertice> GenVertices();
-    std::unique_ptr<MultNode> BuildBinFrom(const std::vector<Vertice>& v,
+    std::shared_ptr<MultNode> BuildBinFrom(const std::vector<Vertice>& v,
                                            int root);
     std::unique_ptr<TreeNode> BuildBinTree(const std::vector<Vertice>& v);
     std::unique_ptr<TernNode> BuildTernTree(const std::vector<Vertice>& v,
@@ -26,7 +26,7 @@ class TreeGenerator {
    private:
     int n_, max_x_, max_y_;
 
-    std::unique_ptr<MultNode> DFS_From(std::vector<Vertice>& sorted,
+    std::shared_ptr<MultNode> DFS_From(std::vector<Vertice>& sorted,
                                        int first, int last,
                                        const Vertice& r);
     std::unique_ptr<TreeNode> DFS(const std::vector<Vertice>& sorted,

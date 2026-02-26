@@ -27,7 +27,7 @@ struct MultNode {
     MultNode(const Vertice& vert);
 
     Vertice u;
-    std::vector<std::unique_ptr<MultNode>> ch;
+    std::vector<std::shared_ptr<MultNode>> ch;
 };
 
 struct TreeNode {
@@ -55,13 +55,16 @@ struct RenderSettings {
     RenderSettings& SetEdgeWidth(double w);
     RenderSettings& SetLineCap(svg::StrokeLineCap l_c);
     RenderSettings& SetLineJoin(svg::StrokeLineJoin l_j);
+    RenderSettings& SetEdgeDrawingDuration(double dur);
 
     double max_x = .0, max_y = .0;
-    svg::Color node_color = svg::Rgb(255, 128, 0),
+    svg::Color background_color = svg::Rgb(32, 32, 32),
+               node_color = svg::Rgb(255, 128, 0),
                edge_color = svg::Rgb(0, 153, 0),
                outline_color = svg::Rgb(96, 96, 96);
-    double node_radius = 8., edge_width = 4.;
+    double node_radius = 7., edge_width = 4.;
     svg::StrokeLineCap line_cap = svg::StrokeLineCap::ROUND;
     svg::StrokeLineJoin line_join = svg::StrokeLineJoin::ROUND;
+    double edge_drawing_dur = .6;
     double padding = 30.;
 };

@@ -41,7 +41,7 @@ std::vector<Vertice> TreeGenerator::GenVertices() {
     return v;
 }
 
-std::unique_ptr<MultNode> TreeGenerator::BuildBinFrom(
+std::shared_ptr<MultNode> TreeGenerator::BuildBinFrom(
     const std::vector<Vertice>& v, int root) {
     std::vector<Vertice> sorted = v;
     int n = sorted.size();
@@ -57,8 +57,8 @@ std::unique_ptr<MultNode> TreeGenerator::BuildBinFrom(
             break;
         }
     }
-    std::unique_ptr<MultNode> root_node =
-        std::make_unique<MultNode>(vroot);
+    std::shared_ptr<MultNode> root_node =
+        std::make_shared<MultNode>(vroot);
     root_node->ch.push_back(DFS_From(sorted, 0, root_idx - 1, vroot));
     root_node->ch.push_back(DFS_From(sorted, root_idx + 1, n - 1, vroot));
     return root_node;
@@ -165,7 +165,7 @@ std::unique_ptr<TernNode> TreeGenerator::DFS_Tern(
     return curr;
 }
 
-std::unique_ptr<MultNode> TreeGenerator::DFS_From(
+std::shared_ptr<MultNode> TreeGenerator::DFS_From(
     std::vector<Vertice>& sorted, int first, int last, const Vertice& r) {
     if (first > last) {
         return nullptr;
@@ -173,7 +173,7 @@ std::unique_ptr<MultNode> TreeGenerator::DFS_From(
     SortByAngle(sorted, first, last, r);
     int v = FindNearestIdx(sorted, first, last, r);
     Vertice vv = sorted[v];
-    std::unique_ptr<MultNode> curr = std::make_unique<MultNode>(vv);
+    std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv);
     curr->ch.push_back(DFS_From(sorted, first, v - 1, vv));
     curr->ch.push_back(DFS_From(sorted, v + 1, last, vv));
     return curr;

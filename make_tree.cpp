@@ -10,9 +10,9 @@ int main() {
     /* std::ofstream bin_output("bin_tree.svg");
     std::ofstream tern_output("tern_tree.svg");
     std::ofstream tern_output_ext("tern_tree_ext.svg"); */
-    std::ofstream a_line("animated_line.svg");
+    std::ofstream a_output("animated_tree.svg");
     std::ofstream omni_output("omni_tree.svg");
-    TreeGenerator tree_gen(140, 1500, 1100);
+    TreeGenerator tree_gen(500, 1500, 1100);
     RenderSettings settings;
     settings.SetMaxX(1500).SetMaxY(1100);
     auto v = tree_gen.GenVertices();
@@ -25,17 +25,5 @@ int main() {
     /* tree_rend.Render_Bin(bin_t).Render(bin_output);
     tree_rend.Render_Tern(tern_t).Render(tern_output);
     tree_rend.Render_Tern(tern_t_ext).Render(tern_output_ext); */
-
-    svg::Point a(50, 50), b(150, 150);
-    svg::Document doc;
-    svg::AnimatedLine line;
-    line.SetStrokeColor(svg::Rgb(0, 255, 0))
-        .SetStrokeWidth(3)
-        .SetA(a)
-        .SetB(b)
-        .SetDur(1)
-        .SetBegin(0)
-        .SetFill(svg::AnimationFill::FREEZE);
-    doc.Add(line);
-    doc.Render(a_line);
+    tree_rend.RenderAnimatedBFS(arbitary_bin).Render(a_output);
 }

@@ -64,3 +64,8 @@ RenderSettings& RenderSettings::SetLineJoin(svg::StrokeLineJoin l_j) {
     line_join = l_j;
     return *this;
 }
+
+RenderSettings& RenderSettings::SetEdgeDrawingDuration(double dur) {
+    edge_drawing_dur = dur;
+    return *this;
+}
