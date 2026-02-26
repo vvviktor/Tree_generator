@@ -174,10 +174,11 @@ Line& Line::SetB(Point b) {
 }
 
 void Line::RenderHeader(const RenderContext& context) const {
+    using namespace std::literals;
     auto& out = context.out;
     out << "<line x1=\""sv << a_.x << "\" y1=\""sv << a_.y << "\" x2=\""sv
         << b_.x << "\" y2=\""sv << b_.y << "\" "sv;
-    RenderAttrs(out);
+    this->RenderAttrs(out);
     out << ">"sv;
 }
 
@@ -188,6 +189,46 @@ void Line::RenderCloseTag(const RenderContext& context) const {
 
 void Line::RenderObject(const RenderContext& context) const {
     RenderHeader(context);
+    RenderCloseTag(context);
+}
+
+void AnimatedAttr::RenderObject(const RenderContext& context) const {
+    auto& out = context.out;
+    out << "<animate "sv;
+    RenderAttrs(out);
+    out << "/>";
+}
+
+AnimatedLine::AnimatedLine() : Line(), x2_("x2"), y2_("y2") {}
+
+AnimatedLine& AnimatedLine::SetDur(double dur) {
+    x2_.SetDur(dur);
+    y2_.SetDur(dur);
+    return *this;
+}
+
+AnimatedLine& AnimatedLine::SetBegin(double begin) {
+    x2_.SetBegin(begin);
+    y2_.SetBegin(begin);
+    return *this;
+}
+
+AnimatedLine& AnimatedLine::SetEnd(double end) {
+    x2_.SetEnd(end);
+    y2_.SetEnd(end);
+    return *this;
+}
+
+AnimatedLine& AnimatedLine::SetAnimationFill(AnimationFill fill) {
+    x2_.SetFill(fill);
+    y2_.SetFill(fill);
+    return *this;
+}
+
+void AnimatedLine::RenderObject(const RenderContext& context) const {
+    RenderHeader(context);
+    x2_.Render(context.Indented());
+    y2_.Render(context.Indented());
     RenderCloseTag(context);
 }
 
