@@ -344,8 +344,10 @@ class Polyline final : public Object, public PathProps<Polyline> {
 
 class Line : public Object, public PathProps<Line> {
    public:
-    Line& SetA(Point a);
+    Line& SetA(Point a); 
     Line& SetB(Point b);
+    
+    ~Line() = default;
 
    protected:
     Point a_, b_;
@@ -368,7 +370,6 @@ class AnimatedAttr final : public Object,
 class AnimatedLine final : public Line {
    public:
     AnimatedLine();
-
     AnimatedLine& SetDur(double dur);
     AnimatedLine& SetBegin(double begin);
     AnimatedLine& SetEnd(double end);

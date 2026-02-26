@@ -199,9 +199,12 @@ void AnimatedAttr::RenderObject(const RenderContext& context) const {
     out << "/>";
 }
 
-AnimatedLine::AnimatedLine() : Line(), x2_("x2"), y2_("y2") {}
+AnimatedLine::AnimatedLine() : Line(), x2_("x2"), y2_("y2") {    
+}
 
-AnimatedLine& AnimatedLine::SetDur(double dur) {
+AnimatedLine& AnimatedLine::SetDur(double dur) {    
+    x2_.SetFrom(a_.x).SetTo(b_.x);
+    y2_.SetFrom(a_.y).SetTo(b_.y);
     x2_.SetDur(dur);
     y2_.SetDur(dur);
     return *this;
