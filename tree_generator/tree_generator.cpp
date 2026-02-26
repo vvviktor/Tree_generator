@@ -17,10 +17,6 @@ void TreeGenerator::PrintV(const std::vector<Vertice>& v) const {
     std::cout << "]\n";
 }
 
-std::unique_ptr<TreeNode> TreeGenerator::GenerateRandom() {
-    return BuildBinTree(GenVertices());
-}
-
 std::vector<Vertice> TreeGenerator::GenVertices() {
     std::random_device r;
     std::mt19937 g(r());
@@ -64,7 +60,7 @@ std::shared_ptr<MultNode> TreeGenerator::BuildBinFrom(
     return root_node;
 }
 
-std::unique_ptr<TreeNode> TreeGenerator::BuildBinTree(
+std::shared_ptr<MultNode> TreeGenerator::BuildBinTree(
     const std::vector<Vertice>& v) {
     std::vector<Vertice> sorted = v;
     std::sort(sorted.begin(), sorted.end());
@@ -91,77 +87,16 @@ std::unique_ptr<TreeNode> TreeGenerator::BuildBinTree(
     return DFS(sorted, l_ch, r_ch, root);
 }
 
-std::unique_ptr<TernNode> TreeGenerator::BuildTernTree(
-    const std::vector<Vertice>& v, int mid_size) {
-    std::vector<Vertice> sorted = v;
-    std::sort(sorted.begin(), sorted.end());
-    std::vector<int> parent(n_, -1), l_ch(n_, -1), m_ch(n_, -1),
-        r_ch(n_, -1), size(n_, 1);
-    int last = 0, root = 0;
-    for (int i = 1; i < n_; ++i) {
-        last = i - 1;
-        while (last != root && sorted[last].y <= sorted[i].y) {
-            last = parent[last];
-        }
-        if (sorted[last].y <= sorted[i].y) {
-            parent[root] = i;
-            l_ch[i] = root;
-            root = i;
-        } else {
-            if (m_ch[last] == -1) {
-                m_ch[last] = i;
-            } else if (m_ch[last] != -1 && size[m_ch[last]] < mid_size) {
-                parent[m_ch[last]] = i;  // отцепляем среднего сына last
-                size[last] -=
-                    size[m_ch[last]];  // уменьшаем размер last на размер
-                                       // ее среднего сына
-                l_ch[i] = m_ch[last];  // вешаем среднего сына last под i
-                size[i] += size[m_ch[last]];  // увеличиваем размер i на
-                                              // размер среднего сына last
-                m_ch[last] = i;  // вешаем i средним сыном last
-            } else if (r_ch[last] != -1) {
-                parent[r_ch[last]] = i;  // отцепляем правого сына last
-                size[last] -=
-                    size[r_ch[last]];  // уменьшаем размер last на размер
-                                       // ее правого сына
-                l_ch[i] = r_ch[last];  // вешаем правого сына last под i
-                size[i] += size[r_ch[last]];  // увеличиваем размер i на
-                                              // размер правого сына last
-                r_ch[last] = i;               // вешаем i правым сыном last
-            } else {
-                r_ch[last] = i;
-            }
-            size[last] += size[i];  // увеличиваем размер last на размер i
-            parent[i] = last;
-        }
-    }
-    return DFS_Tern(sorted, l_ch, m_ch, r_ch, root);
-}
-
-std::unique_ptr<TreeNode> TreeGenerator::DFS(
+std::shared_ptr<MultNode> TreeGenerator::DFS(
     const std::vector<Vertice>& sorted, const std::vector<int>& l_ch,
     const std::vector<int>& r_ch, int r) {
     if (r == -1) {
         return nullptr;
     }
-    std::unique_ptr<TreeNode> curr =
-        std::make_unique<TreeNode>(sorted[r], nullptr, nullptr);
-    curr->left = DFS(sorted, l_ch, r_ch, l_ch[r]);
-    curr->right = DFS(sorted, l_ch, r_ch, r_ch[r]);
-    return curr;
-}
-
-std::unique_ptr<TernNode> TreeGenerator::DFS_Tern(
-    const std::vector<Vertice>& sorted, const std::vector<int>& l_ch,
-    const std::vector<int>& m_ch, const std::vector<int>& r_ch, int r) {
-    if (r == -1) {
-        return nullptr;
-    }
-    std::unique_ptr<TernNode> curr =
-        std::make_unique<TernNode>(sorted[r], nullptr, nullptr, nullptr);
-    curr->left = DFS_Tern(sorted, l_ch, m_ch, r_ch, l_ch[r]);
-    curr->mid = DFS_Tern(sorted, l_ch, m_ch, r_ch, m_ch[r]);
-    curr->right = DFS_Tern(sorted, l_ch, m_ch, r_ch, r_ch[r]);
+    std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(sorted[r]);
+    curr->ch.push_back(
+        DFS(sorted, l_ch, r_ch, l_ch[r]));  // left node first
+    curr->ch.push_back(DFS(sorted, l_ch, r_ch, r_ch[r]));
     return curr;
 }
 

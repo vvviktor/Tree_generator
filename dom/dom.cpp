@@ -8,18 +8,6 @@ Vertice& Vertice::operator=(const Vertice& rhs) {
 
 MultNode::MultNode(const Vertice& vert) : u(vert) {}
 
-TreeNode::TreeNode(const Vertice& vert, std::unique_ptr<TreeNode> l,
-                   std::unique_ptr<TreeNode> r)
-    : u(vert), left(std::move(l)), right(std::move(r)) {}
-
-TernNode::TernNode(const Vertice& vert, std::unique_ptr<TernNode> l,
-                   std::unique_ptr<TernNode> m,
-                   std::unique_ptr<TernNode> r)
-    : u(vert),
-      left(std::move(l)),
-      mid(std::move(m)),
-      right(std::move(r)) {}
-
 RenderSettings& RenderSettings::SetMaxX(double x) {
     max_x = x;
     return *this;

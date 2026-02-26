@@ -30,21 +30,6 @@ struct MultNode {
     std::vector<std::shared_ptr<MultNode>> ch;
 };
 
-struct TreeNode {
-    TreeNode(const Vertice& vert, std::unique_ptr<TreeNode> l,
-             std::unique_ptr<TreeNode> r);
-    Vertice u;
-    std::unique_ptr<TreeNode> left = nullptr, right = nullptr;
-};
-
-struct TernNode {
-    TernNode(const Vertice& vert, std::unique_ptr<TernNode> l,
-             std::unique_ptr<TernNode> m, std::unique_ptr<TernNode> r);
-    Vertice u;
-    std::unique_ptr<TernNode> left = nullptr, mid = nullptr,
-                              right = nullptr;
-};
-
 struct RenderSettings {
     RenderSettings& SetMaxX(double x);
     RenderSettings& SetMaxY(double y);
