@@ -165,9 +165,6 @@ std::ostream& operator<<(std::ostream& out, AnimationFill fill);
 template <typename Owner>
 class AnimationProps {
    public:
-    AnimationProps() = default;
-    AnimationProps(std::string name);
-
     Owner& SetFrom(double from);
     Owner& SetTo(double to);
     Owner& SetDur(double dur);
@@ -177,19 +174,14 @@ class AnimationProps {
 
    protected:
     ~AnimationProps() = default;
-    void RenderAttrs(std::ostream& out) const;
+    void RenderAnimationAttrs(std::ostream& out) const;
 
    private:
-    std::string attr_name_;
     std::optional<double> from_, to_, dur_, begin_, end_;
     std::optional<AnimationFill> fill_;
 
     Owner& AsOwner();
 };
-
-template <typename Owner>
-AnimationProps<Owner>::AnimationProps(std::string name)
-    : attr_name_(std::move(name)) {}
 
 template <typename Owner>
 Owner& AnimationProps<Owner>::SetFrom(double from) {
@@ -228,9 +220,8 @@ Owner& AnimationProps<Owner>::SetFill(AnimationFill fill) {
 }
 
 template <typename Owner>
-void AnimationProps<Owner>::RenderAttrs(std::ostream& out) const {
+void AnimationProps<Owner>::RenderAnimationAttrs(std::ostream& out) const {
     using namespace std::literals;
-    out << "attributeName=\""sv << attr_name_ << "\" "sv;
     if (from_) {
         out << "from=\""sv << *from_ << "\" "sv;
     }
@@ -342,12 +333,12 @@ class Polyline final : public Object, public PathProps<Polyline> {
     void RenderObject(const RenderContext& context) const override;
 };
 
-class Line : public Object, public PathProps<Line> {
+class Line : public Object,
+             public PathProps<Line>,
+             public AnimationProps<Line> {
    public:
-    Line& SetA(Point a); 
+    Line& SetA(Point a);
     Line& SetB(Point b);
-    
-    ~Line() = default;
 
    protected:
     Point a_, b_;
@@ -358,26 +349,8 @@ class Line : public Object, public PathProps<Line> {
     void RenderObject(const RenderContext& context) const override;
 };
 
-class AnimatedAttr final : public Object,
-                           public AnimationProps<AnimatedAttr> {
-   public:
-    using AnimationProps<AnimatedAttr>::AnimationProps;
-
-   private:
-    void RenderObject(const RenderContext& context) const override;
-};
-
 class AnimatedLine final : public Line {
-   public:
-    AnimatedLine();
-    AnimatedLine& SetDur(double dur);
-    AnimatedLine& SetBegin(double begin);
-    AnimatedLine& SetEnd(double end);
-    AnimatedLine& SetAnimationFill(AnimationFill fill);
-
    private:
-    AnimatedAttr x2_, y2_;
-
     void RenderObject(const RenderContext& context) const override;
 };
 

@@ -29,8 +29,13 @@ int main() {
     svg::Point a(50, 50), b(150, 150);
     svg::Document doc;
     svg::AnimatedLine line;
-    line.SetStrokeColor(svg::Rgb(0,255,0)).SetStrokeWidth(3).SetA(a).SetB(b);
-    line.SetDur(1).SetBegin(0).SetAnimationFill(svg::AnimationFill::FREEZE);
+    line.SetStrokeColor(svg::Rgb(0, 255, 0))
+        .SetStrokeWidth(3)
+        .SetA(a)
+        .SetB(b)
+        .SetDur(1)
+        .SetBegin(0)
+        .SetFill(svg::AnimationFill::FREEZE);
     doc.Add(line);
     doc.Render(a_line);
 }

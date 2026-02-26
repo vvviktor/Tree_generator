@@ -192,46 +192,22 @@ void Line::RenderObject(const RenderContext& context) const {
     RenderCloseTag(context);
 }
 
-void AnimatedAttr::RenderObject(const RenderContext& context) const {
-    auto& out = context.out;
-    out << "<animate "sv;
-    RenderAttrs(out);
-    out << "/>";
-}
-
-AnimatedLine::AnimatedLine() : Line(), x2_("x2"), y2_("y2") {    
-}
-
-AnimatedLine& AnimatedLine::SetDur(double dur) {    
-    x2_.SetFrom(a_.x).SetTo(b_.x);
-    y2_.SetFrom(a_.y).SetTo(b_.y);
-    x2_.SetDur(dur);
-    y2_.SetDur(dur);
-    return *this;
-}
-
-AnimatedLine& AnimatedLine::SetBegin(double begin) {
-    x2_.SetBegin(begin);
-    y2_.SetBegin(begin);
-    return *this;
-}
-
-AnimatedLine& AnimatedLine::SetEnd(double end) {
-    x2_.SetEnd(end);
-    y2_.SetEnd(end);
-    return *this;
-}
-
-AnimatedLine& AnimatedLine::SetAnimationFill(AnimationFill fill) {
-    x2_.SetFill(fill);
-    y2_.SetFill(fill);
-    return *this;
-}
-
 void AnimatedLine::RenderObject(const RenderContext& context) const {
+    auto& out = context.out;
     RenderHeader(context);
-    x2_.Render(context.Indented());
-    y2_.Render(context.Indented());
+    out << '\n';
+    RenderContext inner = context.Indented();
+    inner.RenderIndent();
+    out << "<animate attributeName=\"x2\" from=\""sv << a_.x
+        << "\" to=\""sv << b_.x << "\" "sv;
+    RenderAnimationAttrs(out);
+    out << "/>\n";
+    inner.RenderIndent();
+    out << "<animate attributeName=\"y2\" from=\""sv << a_.y
+        << "\" to=\""sv << b_.y << "\" "sv;
+    RenderAnimationAttrs(out);
+    out << "/>\n";
+    context.RenderIndent();
     RenderCloseTag(context);
 }
 
