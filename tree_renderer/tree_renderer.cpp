@@ -69,7 +69,8 @@ svg::Document TreeRenderer::RenderAnimatedBFS(
             }
             q.pop();
         }
-        time += render_settings_.edge_drawing_dur + 0.1;
+        time += render_settings_.edge_drawing_dur +
+                render_settings_.edge_drawing_interval;
     }
     svg::Point root_node(
         root->u.x + render_settings_.padding,
