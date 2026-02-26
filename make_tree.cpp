@@ -24,4 +24,9 @@ int main() {
     /* tree_rend.Render_Bin(bin_t).Render(bin_output);
     tree_rend.Render_Tern(tern_t).Render(tern_output);
     tree_rend.Render_Tern(tern_t_ext).Render(tern_output_ext); */
+
+    /* svg::Point a(50, 50), b(150, 150);
+    svg::Document doc;
+    svg::AnimatedLine line;
+    line.SetA(a).SetB(b).SetStrokeColor(svg::Rgb(0,255,0)).SetStrokeWidth(3).SetDur() */
 }
