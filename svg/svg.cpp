@@ -292,6 +292,7 @@ void Document::Render(std::ostream& out) const {
     out << "<svg"sv;
     if (width_ != -1 && height_ != -1) {
         out << " width=\""sv << width_ << "\" height=\""sv << height_
+            << "\" viewBox=\"0 0 "sv << width_ << " "sv << height_
             << "\""sv;
     }
     out << " xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv

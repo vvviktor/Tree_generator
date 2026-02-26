@@ -229,13 +229,13 @@ void AnimationProps<Owner>::RenderAnimationAttrs(std::ostream& out) const {
         out << "to=\""sv << *to_ << "\" "sv;
     }
     if (dur_) {
-        out << "dur=\""sv << *dur_ << "\" "sv;
+        out << "dur=\""sv << *dur_ << "s\" "sv;
     }
     if (begin_) {
-        out << "begin=\""sv << *begin_ << "\" "sv;
+        out << "begin=\""sv << *begin_ << "s\" "sv;
     }
     if (end_) {
-        out << "end=\""sv << *end_ << "\" "sv;
+        out << "end=\""sv << *end_ << "s\" "sv;
     }
     if (fill_) {
         out << "fill=\""sv << *fill_ << "\" "sv;
