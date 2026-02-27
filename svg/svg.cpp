@@ -127,14 +127,22 @@ Circle& Circle::SetRadius(double radius) {
     return *this;
 }
 
+void Circle::RenderHeader(std::ostream& out) const {
+    out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y
+        << "\" "sv << "r=\""sv << radius_ << "\" "sv;
+    RenderAttrs(out);
+    out << ">"sv;
+}
+
+void Circle::RenderCloseTag(std::ostream& out) const {
+    out << "</circle>"sv;
+}
+
 void Circle::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
     context.RenderIndent();
-    out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y
-        << "\" "sv;
-    out << "r=\""sv << radius_ << "\" "sv;
-    RenderAttrs(out);
-    out << "/>"sv;
+    RenderHeader(out);
+    RenderCloseTag(out);
     out << "\n"sv;
 }
 

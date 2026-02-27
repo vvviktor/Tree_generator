@@ -78,6 +78,7 @@ class PathProps {
    public:
     Owner& SetFillColor(Color color);
     Owner& SetStrokeColor(Color color);
+    Owner& SetOpacity(double opacity);
     Owner& SetStrokeWidth(double width);
     Owner& SetStrokeLineCap(StrokeLineCap line_cap);
     Owner& SetStrokeLineJoin(StrokeLineJoin line_join);
@@ -90,7 +91,7 @@ class PathProps {
    private:
     std::optional<Color> fill_color_;
     std::optional<Color> stroke_color_;
-    std::optional<double> stroke_width_;
+    std::optional<double> opacity_, stroke_width_;
     std::optional<StrokeLineCap> stroke_line_cap_;
     std::optional<StrokeLineJoin> stroke_line_join_;
 
@@ -106,6 +107,12 @@ Owner& PathProps<Owner>::SetFillColor(Color color) {
 template <typename Owner>
 Owner& PathProps<Owner>::SetStrokeColor(Color color) {
     stroke_color_ = std::move(color);
+    return AsOwner();
+}
+
+template <typename Owner>
+Owner& PathProps<Owner>::SetOpacity(double opacity) {
+    opacity_ = opacity;
     return AsOwner();
 }
 
@@ -136,6 +143,9 @@ void PathProps<Owner>::RenderAttrs(std::ostream& out) const {
     }
     if (stroke_color_) {
         out << "stroke=\""sv << *stroke_color_ << "\" "sv;
+    }
+    if (opacity_) {
+        out << "opacity=\""sv << *opacity_ << "\" "sv;
     }
     if (stroke_width_) {
         out << "stroke-width=\""sv << *stroke_width_ << "\" "sv;
@@ -316,15 +326,21 @@ void ObjectContainer::Add(T obj) {
  * Класс Circle моделирует элемент <circle> для отображения круга
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
  */
-class Circle final : public Object, public PathProps<Circle> {
+class Circle final : public Object,
+                     public PathProps<Circle>,
+                     public AnimationProps<Circle> {
    public:
     Circle& SetCenter(Point center);
     Circle& SetRadius(double radius);
 
-   private:
+   protected:
     Point center_;
     double radius_ = 1.0;
 
+    void RenderHeader(std::ostream& out) const;
+    void RenderCloseTag(std::ostream& out) const;
+
+   private:
     void RenderObject(const RenderContext& context) const override;
 };
 
