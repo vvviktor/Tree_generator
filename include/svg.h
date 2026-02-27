@@ -84,17 +84,17 @@ class PathProps {
     Owner& SetStrokeLineJoin(StrokeLineJoin line_join);
 
    protected:
-    ~PathProps() = default;
-
-    void RenderAttrs(std::ostream& out) const;
-
-   private:
     std::optional<Color> fill_color_;
     std::optional<Color> stroke_color_;
     std::optional<double> opacity_, stroke_width_;
     std::optional<StrokeLineCap> stroke_line_cap_;
     std::optional<StrokeLineJoin> stroke_line_join_;
 
+    ~PathProps() = default;
+
+    void RenderAttrs(std::ostream& out) const;
+
+   private:
     Owner& AsOwner();
 };
 
@@ -183,13 +183,13 @@ class AnimationProps {
     Owner& SetFill(AnimationFill fill);
 
    protected:
+    std::optional<double> from_, to_, dur_, begin_, end_;
+    std::optional<AnimationFill> fill_;
+
     ~AnimationProps() = default;
     void RenderAnimationAttrs(std::ostream& out) const;
 
    private:
-    std::optional<double> from_, to_, dur_, begin_, end_;
-    std::optional<AnimationFill> fill_;
-
     Owner& AsOwner();
 };
 
@@ -326,9 +326,9 @@ void ObjectContainer::Add(T obj) {
  * Класс Circle моделирует элемент <circle> для отображения круга
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
  */
-class Circle final : public Object,
-                     public PathProps<Circle>,
-                     public AnimationProps<Circle> {
+class Circle : public Object,
+               public PathProps<Circle>,
+               public AnimationProps<Circle> {
    public:
     Circle& SetCenter(Point center);
     Circle& SetRadius(double radius);
@@ -342,6 +342,14 @@ class Circle final : public Object,
 
    private:
     void RenderObject(const RenderContext& context) const override;
+};
+
+class AnimatedCircle : public Circle, public Animated {
+   private:
+    void RenderObject(const RenderContext& context) const override;
+    void RenderAnimation(const RenderContext& context,
+                         std::string attr_name, double from,
+                         double to) const override;
 };
 
 /*

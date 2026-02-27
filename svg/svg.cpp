@@ -146,6 +146,30 @@ void Circle::RenderObject(const RenderContext& context) const {
     out << "\n"sv;
 }
 
+void AnimatedCircle::RenderObject(const RenderContext& context) const {
+    auto& out = context.out;
+    context.RenderIndent();
+    RenderHeader(out);
+    out << "\n"sv;
+    RenderContext inner = context.Indented();
+    RenderAnimation(inner, "opacity"s, *opacity_, 1);
+    out << "\n"sv;
+    RenderCloseTag(out);
+    out << "\n"sv;
+}
+
+void AnimatedCircle::RenderAnimation(const RenderContext& context,
+                                     std::string attr_name, double from,
+                                     double to) const {
+    context.RenderIndent();
+    auto& out = context.out;
+    out << "<animate attributeName=\"" << attr_name << "\" from=\""sv
+        << from << "\" to=\""sv << to << "\" "sv;
+    RenderAnimationAttrs(out);
+    out << "/>"sv;
+    out << "\n"sv;
+}
+
 Polyline& Polyline::AddPoint(svg::Point point) {
     points_.push_back(point);
     return *this;
