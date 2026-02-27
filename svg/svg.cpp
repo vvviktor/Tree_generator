@@ -112,12 +112,7 @@ void RenderContext::RenderIndent() const {
 }
 
 void Object::Render(const RenderContext& context) const {
-    context.RenderIndent();
-
-    // Делегируем вывод тега своим подклассам
     RenderObject(context);
-
-    context.out << std::endl;
 }
 
 // ---------- Circle ------------------
@@ -134,11 +129,13 @@ Circle& Circle::SetRadius(double radius) {
 
 void Circle::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
+    context.RenderIndent();
     out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y
         << "\" "sv;
     out << "r=\""sv << radius_ << "\" "sv;
     RenderAttrs(out);
     out << "/>"sv;
+    out << "\n"sv;
 }
 
 Polyline& Polyline::AddPoint(svg::Point point) {
@@ -148,7 +145,7 @@ Polyline& Polyline::AddPoint(svg::Point point) {
 
 void Polyline::RenderObject(const svg::RenderContext& context) const {
     auto& out = context.out;
-
+    context.RenderIndent();
     out << "<polyline points=\""sv;
     if (!points_.empty()) {
         for (auto it = points_.begin(); it != points_.end(); ++it) {
@@ -161,6 +158,7 @@ void Polyline::RenderObject(const svg::RenderContext& context) const {
     out << "\" "sv;
     RenderAttrs(out);
     out << "/>"sv;
+    out << "\n"sv;
 }
 
 Line& Line::SetA(Point a) {
@@ -173,48 +171,49 @@ Line& Line::SetB(Point b) {
     return *this;
 }
 
-void Line::RenderHeader(const RenderContext& context, Point from,
-                        Point to) const {
+void Line::RenderHeader(std::ostream& out, Point a, Point b) const {
     using namespace std::literals;
-    auto& out = context.out;
-    out << "<line x1=\""sv << from.x << "\" y1=\""sv << from.y
-        << "\" x2=\""sv << to.x << "\" y2=\""sv << to.y << "\" "sv;
-    this->RenderAttrs(out);
+    out << "<line x1=\""sv << a.x << "\" y1=\""sv << a.y << "\" x2=\""sv
+        << b.x << "\" y2=\""sv << b.y << "\" "sv;
+    RenderAttrs(out);
     out << ">"sv;
 }
 
-void Line::RenderCloseTag(const RenderContext& context) const {
-    auto& out = context.out;
+void Line::RenderCloseTag(std::ostream& out) const {
     out << "</line>";
 }
 
 void Line::RenderObject(const RenderContext& context) const {
-    RenderHeader(context, a_, b_);
-    RenderCloseTag(context);
+    auto& out = context.out;
+    context.RenderIndent();
+    RenderHeader(out, a_, b_);
+    RenderCloseTag(out);
+    out << "\n"sv;
 }
 
 void AnimatedLine::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
-    RenderHeader(context, a_, a_);
-    out << '\n';
-    RenderContext inner = context.Indented();
-    inner.RenderIndent();
-    Animate(inner, "x2"s, a_.x, b_.x);
-    out << "/>\n";
-    inner.RenderIndent();
-    Animate(inner, "y2"s, a_.y, b_.y);
-    out << "/>\n";
     context.RenderIndent();
-    RenderCloseTag(context);
+    RenderHeader(out, a_, a_);
+    out << "\n"sv;
+    RenderContext inner = context.Indented();
+    RenderAnimation(inner, "x2"s, a_.x, b_.x);
+    RenderAnimation(inner, "y2"s, a_.y, b_.y);
+    context.RenderIndent();
+    RenderCloseTag(out);
+    out << "\n"sv;
 }
 
-void AnimatedLine::Animate(const RenderContext& context,
-                           std::string attr_name, double from,
-                           double to) const {
+void AnimatedLine::RenderAnimation(const RenderContext& context,
+                                   std::string attr_name, double from,
+                                   double to) const {
+    context.RenderIndent();
     auto& out = context.out;
     out << "<animate attributeName=\"" << attr_name << "\" from=\""sv
         << from << "\" to=\""sv << to << "\" "sv;
     RenderAnimationAttrs(out);
+    out << "/>"sv;
+    out << "\n"sv;
 }
 
 Text& Text::SetPosition(svg::Point pos) {
@@ -272,7 +271,7 @@ Text& Text::SetData(std::string data) {
 
 void Text::RenderObject(const svg::RenderContext& context) const {
     auto& out = context.out;
-
+    context.RenderIndent();
     out << "<text x=\""sv << pos_.x << "\" y=\""sv << pos_.y << "\" "sv;
     out << "dx=\""sv << offset_.x << "\" dy=\""sv << offset_.y << "\" "sv;
     out << "font-size=\""sv << font_size_ << "\" "sv;
@@ -285,6 +284,7 @@ void Text::RenderObject(const svg::RenderContext& context) const {
     RenderAttrs(out);
     out << ">"sv;
     out << data_ << "</text>"sv;
+    out << "\n"sv;
 }
 
 void Document::AddPtr(std::unique_ptr<Object>&& obj) {
@@ -302,14 +302,17 @@ void Document::Render(std::ostream& out) const {
     }
     out << " xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv
         << std::endl;
+    ctx.RenderIndent();
     out << "<rect width=\"100%\" height=\"100%\" fill=\""sv
-        << background_color_ << "\"/>\n"sv;
+        << background_color_ << "\"/>";
+    out << "\n"sv;
     if (!doc_data_.empty()) {
         for (const auto& obj_ptr : doc_data_) {
             obj_ptr->Render(ctx);
         }
     }
     out << "</svg>"sv;
+    out << "\n"sv;
 }
 
 Document& Document::SetWidth(int w) {

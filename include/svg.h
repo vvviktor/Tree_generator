@@ -292,9 +292,9 @@ class Animated {
     virtual ~Animated() = default;
 
    private:
-    virtual void Animate(const RenderContext& context,
-                         std::string attr_name, double from,
-                         double to) const = 0;
+    virtual void RenderAnimation(const RenderContext& context,
+                                 std::string attr_name, double from,
+                                 double to) const = 0;
 };
 
 class ObjectContainer {
@@ -352,9 +352,8 @@ class Line : public Object,
 
    protected:
     Point a_, b_;
-    void RenderHeader(const RenderContext& context, Point from,
-                      Point to) const;
-    void RenderCloseTag(const RenderContext& context) const;
+    void RenderHeader(std::ostream& out, Point a, Point b) const;
+    void RenderCloseTag(std::ostream& out) const;
 
    private:
     void RenderObject(const RenderContext& context) const override;
@@ -363,8 +362,9 @@ class Line : public Object,
 class AnimatedLine final : public Line, public Animated {
    private:
     void RenderObject(const RenderContext& context) const override;
-    void Animate(const RenderContext& context, std::string attr_name,
-                 double from, double to) const override;
+    void RenderAnimation(const RenderContext& context,
+                         std::string attr_name, double from,
+                         double to) const override;
 };
 
 /*
