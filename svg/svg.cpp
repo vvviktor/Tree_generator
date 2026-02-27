@@ -199,17 +199,22 @@ void AnimatedLine::RenderObject(const RenderContext& context) const {
     out << '\n';
     RenderContext inner = context.Indented();
     inner.RenderIndent();
-    out << "<animate attributeName=\"x2\" from=\""sv << a_.x
-        << "\" to=\""sv << b_.x << "\" "sv;
-    RenderAnimationAttrs(out);
+    Animate(inner, "x2"s, a_.x, b_.x);
     out << "/>\n";
     inner.RenderIndent();
-    out << "<animate attributeName=\"y2\" from=\""sv << a_.y
-        << "\" to=\""sv << b_.y << "\" "sv;
-    RenderAnimationAttrs(out);
+    Animate(inner, "y2"s, a_.y, b_.y);
     out << "/>\n";
     context.RenderIndent();
     RenderCloseTag(context);
+}
+
+void AnimatedLine::Animate(const RenderContext& context,
+                           std::string attr_name, double from,
+                           double to) const {
+    auto& out = context.out;
+    out << "<animate attributeName=\"" << attr_name << "\" from=\""sv
+        << from << "\" to=\""sv << to << "\" "sv;
+    RenderAnimationAttrs(out);
 }
 
 Text& Text::SetPosition(svg::Point pos) {

@@ -287,6 +287,16 @@ class Object {
     virtual void RenderObject(const RenderContext& context) const = 0;
 };
 
+class Animated {
+   public:
+    virtual ~Animated() = default;
+
+   private:
+    virtual void Animate(const RenderContext& context,
+                         std::string attr_name, double from,
+                         double to) const = 0;
+};
+
 class ObjectContainer {
    public:
     template <class T>
@@ -350,9 +360,11 @@ class Line : public Object,
     void RenderObject(const RenderContext& context) const override;
 };
 
-class AnimatedLine final : public Line {
+class AnimatedLine final : public Line, public Animated {
    private:
     void RenderObject(const RenderContext& context) const override;
+    void Animate(const RenderContext& context, std::string attr_name,
+                 double from, double to) const override;
 };
 
 /*
