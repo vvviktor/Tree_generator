@@ -44,10 +44,15 @@ svg::Document TreeRenderer::RenderAnimatedBFS(
                     .SetFill(svg::AnimationFill::FREEZE);
                 doc.Add(edge);
                 q.push(std::move(v));
-                svg::Circle node;
+                svg::AnimatedCircle node;
                 node.SetCenter(child_node)
                     .SetRadius(render_settings_.node_radius)
-                    .SetFillColor(render_settings_.node_color);
+                    .SetFillColor(render_settings_.node_color)
+                    .SetOpacity(0.)
+                    .SetDur(render_settings_.edge_drawing_dur)
+                    .SetBegin(time +
+                              render_settings_.edge_drawing_dur / 2.)
+                    .SetFill(svg::AnimationFill::FREEZE);
                 doc.Add(node);
             }
             q.pop();

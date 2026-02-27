@@ -153,7 +153,7 @@ void AnimatedCircle::RenderObject(const RenderContext& context) const {
     out << "\n"sv;
     RenderContext inner = context.Indented();
     RenderAnimation(inner, "opacity"s, *opacity_, 1);
-    out << "\n"sv;
+    context.RenderIndent();
     RenderCloseTag(out);
     out << "\n"sv;
 }
