@@ -84,17 +84,17 @@ class PathProps {
     Owner& SetStrokeLineJoin(StrokeLineJoin line_join);
 
    protected:
+    ~PathProps() = default;
+
+    void RenderAttrs(std::ostream& out) const;
+
+   private:
     std::optional<Color> fill_color_;
     std::optional<Color> stroke_color_;
     std::optional<double> opacity_, stroke_width_;
     std::optional<StrokeLineCap> stroke_line_cap_;
     std::optional<StrokeLineJoin> stroke_line_join_;
 
-    ~PathProps() = default;
-
-    void RenderAttrs(std::ostream& out) const;
-
-   private:
     Owner& AsOwner();
 };
 
@@ -185,14 +185,15 @@ class AnimationProps {
     Owner& SetFill(AnimationFill fill);
 
    protected:
+    ~AnimationProps() = default;
+
+    void RenderAnimationAttrs(std::ostream& out) const;
+
+   private:
     std::string attr_name_;
     std::optional<double> from_, to_, dur_, begin_, end_;
     std::optional<AnimationFill> fill_;
 
-    ~AnimationProps() = default;
-    void RenderAnimationAttrs(std::ostream& out) const;
-
-   private:
     Owner& AsOwner();
 };
 
