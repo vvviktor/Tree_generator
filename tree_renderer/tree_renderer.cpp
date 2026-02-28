@@ -17,6 +17,8 @@ svg::Document TreeRenderer::RenderAnimatedBFS(
     svg::Document doc;
     ApplyDocBackgroundProps(doc);
     double time = 0.;
+    const double one_step_time = render_settings_.edge_drawing_dur +
+                                 render_settings_.edge_drawing_interval;
     std::queue<std::shared_ptr<MultNode>> q;
     q.push(root);
     while (!q.empty()) {
@@ -33,32 +35,29 @@ svg::Document TreeRenderer::RenderAnimatedBFS(
                 svg::Point child_node(v->u.x + render_settings_.padding,
                                       render_settings_.max_y - v->u.y +
                                           render_settings_.padding);
-                svg::AnimatedLine edge;
+                svg::GrowingLine edge;
                 edge.SetA(curr_node)
                     .SetB(child_node)
-                    .SetStrokeWidth(render_settings_.edge_width)
-                    .SetStrokeColor(render_settings_.edge_color)
-                    .SetStrokeLineCap(render_settings_.line_cap)
                     .SetDur(render_settings_.edge_drawing_dur)
-                    .SetBegin(time)
-                    .SetFill(svg::AnimationFill::FREEZE);
+                    .SetBegin(time);
+                edge.SetStrokeWidth(render_settings_.edge_width)
+                    .SetStrokeColor(render_settings_.edge_color)
+                    .SetStrokeLineCap(render_settings_.line_cap);
                 doc.Add(edge);
                 q.push(std::move(v));
-                svg::AnimatedCircle node;
+                svg::FadeInCircle node;
                 node.SetCenter(child_node)
                     .SetRadius(render_settings_.node_radius)
                     .SetFillColor(render_settings_.node_color)
-                    .SetOpacity(0.)
-                    .SetDur(render_settings_.edge_drawing_dur)
+                    .SetOpacity(0.);
+                node.SetDur(render_settings_.edge_drawing_dur)
                     .SetBegin(time +
-                              render_settings_.edge_drawing_dur / 2.)
-                    .SetFill(svg::AnimationFill::FREEZE);
+                              render_settings_.edge_drawing_dur / 2.);
                 doc.Add(node);
             }
             q.pop();
         }
-        time += render_settings_.edge_drawing_dur +
-                render_settings_.edge_drawing_interval;
+        time += one_step_time;
     }
     svg::Point root_node(
         root->u.x + render_settings_.padding,

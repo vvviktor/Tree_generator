@@ -115,6 +115,18 @@ void Object::Render(const RenderContext& context) const {
     RenderObject(context);
 }
 
+AttribAnimation::AttribAnimation(std::string attr_name)
+    : AnimationProps(std::move(attr_name), AnimationFill::FREEZE) {}
+
+void AttribAnimation::RenderObject(const RenderContext& context) const {
+    context.RenderIndent();
+    auto& out = context.out;
+    out << "<animate "sv;
+    RenderAnimationAttrs(out);
+    out << "/>"sv;
+    out << "\n"sv;
+}
+
 // ---------- Circle ------------------
 
 Circle& Circle::SetCenter(Point center) {
@@ -146,27 +158,29 @@ void Circle::RenderObject(const RenderContext& context) const {
     out << "\n"sv;
 }
 
-void AnimatedCircle::RenderObject(const RenderContext& context) const {
+FadeInCircle::FadeInCircle() : opacity_fade_("opacity"s) {
+    opacity_fade_.SetFrom(0.).SetTo(1.);
+}
+
+FadeInCircle& FadeInCircle::SetDur(double dur) {
+    opacity_fade_.SetDur(dur);
+    return *this;
+}
+
+FadeInCircle& FadeInCircle::SetBegin(double begin) {
+    opacity_fade_.SetBegin(begin);
+    return *this;
+}
+
+void FadeInCircle::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
     context.RenderIndent();
     RenderHeader(out);
     out << "\n"sv;
     RenderContext inner = context.Indented();
-    RenderAnimation(inner, "opacity"s, *opacity_, 1);
+    opacity_fade_.Render(inner);
     context.RenderIndent();
     RenderCloseTag(out);
-    out << "\n"sv;
-}
-
-void AnimatedCircle::RenderAnimation(const RenderContext& context,
-                                     std::string attr_name, double from,
-                                     double to) const {
-    context.RenderIndent();
-    auto& out = context.out;
-    out << "<animate attributeName=\"" << attr_name << "\" from=\""sv
-        << from << "\" to=\""sv << to << "\" "sv;
-    RenderAnimationAttrs(out);
-    out << "/>"sv;
     out << "\n"sv;
 }
 
@@ -223,28 +237,50 @@ void Line::RenderObject(const RenderContext& context) const {
     out << "\n"sv;
 }
 
-void AnimatedLine::RenderObject(const RenderContext& context) const {
+GrowingLine::GrowingLine()
+    : move_x2_("x2"s), move_y2_("y2"s), make_visible_("opacity"s) {
+    SetOpacity(0.);
+    make_visible_.SetFrom(0.).SetTo(1.).SetDur(0.01);
+}
+
+GrowingLine& GrowingLine::SetA(Point a) {
+    a_ = a;
+    b_ = a;
+    move_x2_.SetFrom(a_.x);
+    move_y2_.SetFrom(a_.y);
+    return *this;
+}
+
+GrowingLine& GrowingLine::SetB(Point b) {
+    move_x2_.SetTo(b.x);
+    move_y2_.SetTo(b.y);
+    return *this;
+}
+
+GrowingLine& GrowingLine::SetDur(double dur) {
+    move_x2_.SetDur(dur);
+    move_y2_.SetDur(dur);
+    return *this;
+}
+
+GrowingLine& GrowingLine::SetBegin(double begin) {
+    make_visible_.SetBegin(begin);
+    move_x2_.SetBegin(begin);
+    move_y2_.SetBegin(begin);
+    return *this;
+}
+
+void GrowingLine::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
     context.RenderIndent();
     RenderHeader(out, a_, a_);
     out << "\n"sv;
     RenderContext inner = context.Indented();
-    RenderAnimation(inner, "x2"s, a_.x, b_.x);
-    RenderAnimation(inner, "y2"s, a_.y, b_.y);
+    make_visible_.Render(inner);
+    move_x2_.Render(inner);
+    move_y2_.Render(inner);
     context.RenderIndent();
     RenderCloseTag(out);
-    out << "\n"sv;
-}
-
-void AnimatedLine::RenderAnimation(const RenderContext& context,
-                                   std::string attr_name, double from,
-                                   double to) const {
-    context.RenderIndent();
-    auto& out = context.out;
-    out << "<animate attributeName=\"" << attr_name << "\" from=\""sv
-        << from << "\" to=\""sv << to << "\" "sv;
-    RenderAnimationAttrs(out);
-    out << "/>"sv;
     out << "\n"sv;
 }
 

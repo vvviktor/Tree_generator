@@ -50,6 +50,7 @@ struct RenderSettings {
     double node_radius = 7., edge_width = 4.;
     svg::StrokeLineCap line_cap = svg::StrokeLineCap::ROUND;
     svg::StrokeLineJoin line_join = svg::StrokeLineJoin::ROUND;
-    double edge_drawing_dur = .5, edge_drawing_interval = 0.03;
+    double edge_visibility_init_dur = 0.01, edge_drawing_dur = .5,
+           edge_drawing_interval = 0.03;
     double padding = 30.;
 };

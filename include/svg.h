@@ -175,6 +175,8 @@ std::ostream& operator<<(std::ostream& out, AnimationFill fill);
 template <typename Owner>
 class AnimationProps {
    public:
+    AnimationProps(std::string attr_name, AnimationFill fill);
+
     Owner& SetFrom(double from);
     Owner& SetTo(double to);
     Owner& SetDur(double dur);
@@ -183,6 +185,7 @@ class AnimationProps {
     Owner& SetFill(AnimationFill fill);
 
    protected:
+    std::string attr_name_;
     std::optional<double> from_, to_, dur_, begin_, end_;
     std::optional<AnimationFill> fill_;
 
@@ -192,6 +195,11 @@ class AnimationProps {
    private:
     Owner& AsOwner();
 };
+
+template <typename Owner>
+AnimationProps<Owner>::AnimationProps(std::string attr_name,
+                                      AnimationFill fill)
+    : attr_name_(std::move(attr_name)), fill_(fill) {}
 
 template <typename Owner>
 Owner& AnimationProps<Owner>::SetFrom(double from) {
@@ -232,6 +240,7 @@ Owner& AnimationProps<Owner>::SetFill(AnimationFill fill) {
 template <typename Owner>
 void AnimationProps<Owner>::RenderAnimationAttrs(std::ostream& out) const {
     using namespace std::literals;
+    out << "attributeName=\""sv << attr_name_ << "\" "sv;
     if (from_) {
         out << "from=\""sv << *from_ << "\" "sv;
     }
@@ -322,13 +331,20 @@ void ObjectContainer::Add(T obj) {
     AddPtr(std::make_unique<T>(std::move(obj)));
 }
 
+class AttribAnimation final : public Object,
+                              public AnimationProps<AttribAnimation> {
+   public:
+    AttribAnimation(std::string attr_name);
+
+   private:
+    void RenderObject(const RenderContext& context) const override;
+};
+
 /*
  * Класс Circle моделирует элемент <circle> для отображения круга
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
  */
-class Circle : public Object,
-               public PathProps<Circle>,
-               public AnimationProps<Circle> {
+class Circle : public Object, public PathProps<Circle> {
    public:
     Circle& SetCenter(Point center);
     Circle& SetRadius(double radius);
@@ -344,12 +360,17 @@ class Circle : public Object,
     void RenderObject(const RenderContext& context) const override;
 };
 
-class AnimatedCircle : public Circle, public Animated {
+class FadeInCircle final : public Circle {
+   public:
+    FadeInCircle();
+
+    FadeInCircle& SetDur(double dur);
+    FadeInCircle& SetBegin(double begin);
+
    private:
+    AttribAnimation opacity_fade_;
+
     void RenderObject(const RenderContext& context) const override;
-    void RenderAnimation(const RenderContext& context,
-                         std::string attr_name, double from,
-                         double to) const override;
 };
 
 /*
@@ -367,9 +388,7 @@ class Polyline final : public Object, public PathProps<Polyline> {
     void RenderObject(const RenderContext& context) const override;
 };
 
-class Line : public Object,
-             public PathProps<Line>,
-             public AnimationProps<Line> {
+class Line : public Object, public PathProps<Line> {
    public:
     Line& SetA(Point a);
     Line& SetB(Point b);
@@ -383,12 +402,19 @@ class Line : public Object,
     void RenderObject(const RenderContext& context) const override;
 };
 
-class AnimatedLine final : public Line, public Animated {
+class GrowingLine final : public Line {
+   public:
+    GrowingLine();
+
+    GrowingLine& SetA(Point a);
+    GrowingLine& SetB(Point b);
+    GrowingLine& SetDur(double dur);
+    GrowingLine& SetBegin(double begin);
+
    private:
+    AttribAnimation make_visible_, move_x2_, move_y2_;
+
     void RenderObject(const RenderContext& context) const override;
-    void RenderAnimation(const RenderContext& context,
-                         std::string attr_name, double from,
-                         double to) const override;
 };
 
 /*
