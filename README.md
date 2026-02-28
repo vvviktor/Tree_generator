@@ -3500,3 +3500,5 @@ ___
   </circle>
   <circle cx="308" cy="667" r="7" fill="rgb(255,0,0)" ></circle>
 </svg>
+
+* At this moment only random generation of coordinate pool is possible.
