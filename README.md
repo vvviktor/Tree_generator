@@ -3998,4 +3998,6 @@ ___
   </circle>
   <circle cx="134" cy="215" r="7" fill="rgb(255,0,0)" ></circle>
 </svg>
-* At this moment only random generation of coordinate pool is implemented. To be updated.
+
+- Program generates .svg animated binary trees.
+- At this moment only random generation of coordinate pool is implemented. To be updated.
