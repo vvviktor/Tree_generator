@@ -127,6 +127,20 @@ void AttribAnimation::RenderObject(const RenderContext& context) const {
     out << "\n"sv;
 }
 
+void AnimatedObject::RenderObject(const RenderContext& context) const {
+    auto& out = context.out;
+    context.RenderIndent();
+    RenderHeader(out);
+    out << "\n"sv;
+    RenderContext inner = context.Indented();
+    for (const auto& attr : animated_attrs_) {
+        attr.Render(inner);
+    }
+    context.RenderIndent();
+    RenderCloseTag(out);
+    out << "\n"sv;
+}
+
 // ---------- Circle ------------------
 
 Circle& Circle::SetCenter(Point center) {
@@ -159,20 +173,6 @@ void Circle::RenderHeader(std::ostream& out) const {
 
 void Circle::RenderCloseTag(std::ostream& out) const {
     out << "</circle>"sv;
-}
-
-void Circle::RenderObject(const RenderContext& context) const {
-    auto& out = context.out;
-    context.RenderIndent();
-    RenderHeader(out);
-    out << "\n"sv;
-    RenderContext inner = context.Indented();
-    for (const auto& attr : animated_attrs_) {
-        attr.Render(inner);
-    }
-    context.RenderIndent();
-    RenderCloseTag(out);
-    out << "\n"sv;
 }
 
 Polyline& Polyline::AddPoint(svg::Point point) {
@@ -222,30 +222,16 @@ Line& Line::ExtendTo(Point c, double begin, double dur) {
     return *this;
 }
 
-void Line::RenderHeader(std::ostream& out, Point a, Point b) const {
+void Line::RenderHeader(std::ostream& out) const {
     using namespace std::literals;
-    out << "<line x1=\""sv << a.x << "\" y1=\""sv << a.y << "\" x2=\""sv
-        << b.x << "\" y2=\""sv << b.y << "\" "sv;
+    out << "<line x1=\""sv << a_.x << "\" y1=\""sv << a_.y << "\" x2=\""sv
+        << b_.x << "\" y2=\""sv << b_.y << "\" "sv;
     RenderAttrs(out);
     out << ">"sv;
 }
 
 void Line::RenderCloseTag(std::ostream& out) const {
     out << "</line>";
-}
-
-void Line::RenderObject(const RenderContext& context) const {
-    auto& out = context.out;
-    context.RenderIndent();
-    RenderHeader(out, a_, b_);
-    out << "\n"sv;
-    RenderContext inner = context.Indented();
-    for (const auto& attr : animated_attrs_) {
-        attr.Render(inner);
-    }
-    context.RenderIndent();
-    RenderCloseTag(out);
-    out << "\n"sv;
 }
 
 Text& Text::SetPosition(svg::Point pos) {

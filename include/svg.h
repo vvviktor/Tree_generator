@@ -331,11 +331,24 @@ class AttribAnimation final : public Object,
     void RenderObject(const RenderContext& context) const override;
 };
 
+class AnimatedObject : public Object {
+   public:
+    virtual ~AnimatedObject() = default;
+
+   protected:
+    std::vector<AttribAnimation> animated_attrs_;
+
+   private:
+    virtual void RenderHeader(std::ostream& out) const = 0;
+    virtual void RenderCloseTag(std::ostream& out) const = 0;
+    void RenderObject(const RenderContext& context) const override;
+};
+
 /*
  * Класс Circle моделирует элемент <circle> для отображения круга
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
  */
-class Circle final : public Object, public PathProps<Circle> {
+class Circle final : public AnimatedObject, public PathProps<Circle> {
    public:
     Circle& SetCenter(Point center);
     Circle& SetRadius(double radius);
@@ -344,11 +357,9 @@ class Circle final : public Object, public PathProps<Circle> {
    private:
     Point center_;
     double radius_ = 1.0;
-    std::vector<AttribAnimation> animated_attrs_;
 
-    void RenderHeader(std::ostream& out) const;
-    void RenderCloseTag(std::ostream& out) const;
-    void RenderObject(const RenderContext& context) const override;
+    void RenderHeader(std::ostream& out) const override;
+    void RenderCloseTag(std::ostream& out) const override;
 };
 
 /*
@@ -366,7 +377,7 @@ class Polyline final : public Object, public PathProps<Polyline> {
     void RenderObject(const RenderContext& context) const override;
 };
 
-class Line final : public Object, public PathProps<Line> {
+class Line final : public AnimatedObject, public PathProps<Line> {
    public:
     Line& SetA(Point a);
     Line& SetB(Point b);
@@ -374,11 +385,9 @@ class Line final : public Object, public PathProps<Line> {
 
    private:
     Point a_, b_;
-    std::vector<AttribAnimation> animated_attrs_;
 
-    void RenderHeader(std::ostream& out, Point a, Point b) const;
-    void RenderCloseTag(std::ostream& out) const;
-    void RenderObject(const RenderContext& context) const override;
+    void RenderHeader(std::ostream& out) const override;
+    void RenderCloseTag(std::ostream& out) const override;
 };
 
 /*
