@@ -307,16 +307,6 @@ class Object {
     virtual void RenderObject(const RenderContext& context) const = 0;
 };
 
-class Animated {
-   public:
-    virtual ~Animated() = default;
-
-   private:
-    virtual void RenderAnimation(const RenderContext& context,
-                                 std::string attr_name, double from,
-                                 double to) const = 0;
-};
-
 class ObjectContainer {
    public:
     template <class T>
@@ -345,32 +335,19 @@ class AttribAnimation final : public Object,
  * Класс Circle моделирует элемент <circle> для отображения круга
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
  */
-class Circle : public Object, public PathProps<Circle> {
+class Circle final : public Object, public PathProps<Circle> {
    public:
     Circle& SetCenter(Point center);
     Circle& SetRadius(double radius);
+    Circle& FadeIn(double begin, double dur);
 
-   protected:
+   private:
     Point center_;
     double radius_ = 1.0;
+    std::vector<AttribAnimation> animated_attrs_;
 
     void RenderHeader(std::ostream& out) const;
     void RenderCloseTag(std::ostream& out) const;
-
-   private:
-    void RenderObject(const RenderContext& context) const override;
-};
-
-class FadeInCircle final : public Circle {
-   public:
-    FadeInCircle();
-
-    FadeInCircle& SetDur(double dur);
-    FadeInCircle& SetBegin(double begin);
-
-   private:
-    AttribAnimation opacity_fade_;
-
     void RenderObject(const RenderContext& context) const override;
 };
 
@@ -389,32 +366,18 @@ class Polyline final : public Object, public PathProps<Polyline> {
     void RenderObject(const RenderContext& context) const override;
 };
 
-class Line : public Object, public PathProps<Line> {
+class Line final : public Object, public PathProps<Line> {
    public:
     Line& SetA(Point a);
     Line& SetB(Point b);
+    Line& ExtendTo(Point c, double begin, double dur);
 
-   protected:
+   private:
     Point a_, b_;
+    std::vector<AttribAnimation> animated_attrs_;
+
     void RenderHeader(std::ostream& out, Point a, Point b) const;
     void RenderCloseTag(std::ostream& out) const;
-
-   private:
-    void RenderObject(const RenderContext& context) const override;
-};
-
-class GrowingLine final : public Line {
-   public:
-    GrowingLine();
-
-    GrowingLine& SetA(Point a);
-    GrowingLine& SetB(Point b);
-    GrowingLine& SetDur(double dur);
-    GrowingLine& SetBegin(double begin);
-
-   private:
-    AttribAnimation make_visible_, move_x2_, move_y2_;
-
     void RenderObject(const RenderContext& context) const override;
 };
 

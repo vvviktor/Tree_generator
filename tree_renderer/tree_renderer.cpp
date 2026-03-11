@@ -35,24 +35,24 @@ svg::Document TreeRenderer::RenderAnimatedBFS(
                 svg::Point child_node(v->u.x + render_settings_.padding,
                                       render_settings_.max_y - v->u.y +
                                           render_settings_.padding);
-                svg::GrowingLine edge;
+                svg::Line edge;
                 edge.SetA(curr_node)
-                    .SetB(child_node)
-                    .SetDur(render_settings_.edge_drawing_dur)
-                    .SetBegin(time);
-                edge.SetStrokeWidth(render_settings_.edge_width)
+                    .SetB(curr_node)
+                    .ExtendTo(child_node, time,
+                              render_settings_.edge_drawing_dur)
+                    .SetOpacity(0.)
+                    .SetStrokeWidth(render_settings_.edge_width)
                     .SetStrokeColor(render_settings_.edge_color)
                     .SetStrokeLineCap(render_settings_.line_cap);
                 doc.Add(edge);
                 q.push(std::move(v));
-                svg::FadeInCircle node;
+                svg::Circle node;
                 node.SetCenter(child_node)
                     .SetRadius(render_settings_.node_radius)
                     .SetFillColor(render_settings_.node_color)
-                    .SetOpacity(0.);
-                node.SetDur(render_settings_.edge_drawing_dur)
-                    .SetBegin(time +
-                              render_settings_.edge_drawing_dur / 2.);
+                    .SetOpacity(0.)
+                    .FadeIn(time + render_settings_.edge_drawing_dur / 2.,
+                            render_settings_.edge_drawing_dur);
                 doc.Add(node);
             }
             q.pop();
