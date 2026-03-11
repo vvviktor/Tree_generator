@@ -311,10 +311,10 @@ class ObjectContainer {
    public:
     template <class T>
     void Add(T obj);
-
-    virtual void AddPtr(std::unique_ptr<Object>&&) = 0;
-
     virtual ~ObjectContainer() = default;
+
+   private:
+    virtual void AddPtr(std::unique_ptr<Object>&&) = 0;
 };
 
 template <class T>
@@ -336,9 +336,11 @@ class AnimatedObject : public Object {
     virtual ~AnimatedObject() = default;
 
    protected:
-    std::vector<AttribAnimation> animated_attrs_;
+    void AddAttribAnimation(AttribAnimation attr);
 
    private:
+    std::vector<AttribAnimation> animated_attrs_;
+
     virtual void RenderHeader(std::ostream& out) const = 0;
     virtual void RenderCloseTag(std::ostream& out) const = 0;
     void RenderObject(const RenderContext& context) const override;
@@ -429,12 +431,8 @@ class Document final : public ObjectContainer {
    public:
     Document() = default;
 
-    // Добавляет в svg-документ объект-наследник svg::Object
-    void AddPtr(std::unique_ptr<Object>&& obj) override;
-
     // Выводит в ostream svg-представление документа
     void Render(std::ostream& out) const;
-
     Document& SetWidth(int w);
     Document& SetHeight(int h);
     Document& SetBackgroundColor(Color color);
@@ -443,6 +441,9 @@ class Document final : public ObjectContainer {
     std::vector<std::unique_ptr<Object>> doc_data_;
     int width_ = -1, height_ = -1;
     Color background_color_;
+
+    // Добавляет в svg-документ объект-наследник svg::Object
+    void AddPtr(std::unique_ptr<Object>&& obj) override;
 };
 
 }  // namespace svg

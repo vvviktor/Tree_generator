@@ -127,6 +127,10 @@ void AttribAnimation::RenderObject(const RenderContext& context) const {
     out << "\n"sv;
 }
 
+void AnimatedObject::AddAttribAnimation(AttribAnimation attr) {
+    animated_attrs_.push_back(std::move(attr));
+}
+
 void AnimatedObject::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
     context.RenderIndent();
@@ -160,7 +164,7 @@ Circle& Circle::FadeIn(double begin, double dur) {
         .SetBegin(begin)
         .SetDur(dur)
         .SetFill(AnimationFill::FREEZE);
-    animated_attrs_.push_back(std::move(opacity_animation));
+    AddAttribAnimation(std::move(opacity_animation));
     return *this;
 }
 
@@ -216,9 +220,9 @@ Line& Line::ExtendTo(Point c, double begin, double dur) {
         AnimationFill::FREEZE);
     y2_move.SetFrom(b_.y).SetTo(c.y).SetBegin(begin).SetDur(dur).SetFill(
         AnimationFill::FREEZE);
-    animated_attrs_.push_back(std::move(make_visible));
-    animated_attrs_.push_back(std::move(x2_move));
-    animated_attrs_.push_back(std::move(y2_move));
+    AddAttribAnimation(std::move(make_visible));
+    AddAttribAnimation(std::move(x2_move));
+    AddAttribAnimation(std::move(y2_move));
     return *this;
 }
 
@@ -305,10 +309,6 @@ void Text::RenderObject(const svg::RenderContext& context) const {
     out << "\n"sv;
 }
 
-void Document::AddPtr(std::unique_ptr<Object>&& obj) {
-    doc_data_.push_back(std::move(obj));
-}
-
 void Document::Render(std::ostream& out) const {
     RenderContext ctx(out, 2, 2);
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"sv << std::endl;
@@ -346,6 +346,10 @@ Document& Document::SetHeight(int h) {
 Document& Document::SetBackgroundColor(Color color) {
     background_color_ = color;
     return *this;
+}
+
+void Document::AddPtr(std::unique_ptr<Object>&& obj) {
+    doc_data_.push_back(std::move(obj));
 }
 
 }  // namespace svg
