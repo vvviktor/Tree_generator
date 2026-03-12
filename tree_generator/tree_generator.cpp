@@ -37,6 +37,30 @@ std::vector<Vertice> TreeGenerator::GenVertices() {
     return v;
 }
 
+std::shared_ptr<MultNode> TreeGenerator::BuildBalancedBin(
+    const std::vector<Vertice>& v, int root) {
+    std::vector<Vertice> sorted = v;
+    int n = sorted.size();
+    Vertice vroot = sorted[root];
+    Vertice azimuth = -vroot;  // negative (must be out of border) coords
+                               // for correct first partition!
+
+    SortByAngle(sorted, 0, n - 1, azimuth);
+    int root_idx = -1;
+    for (int i = 0; i < n; ++i) {
+        if (sorted[i] == vroot) {
+            root_idx = i;
+            break;
+        }
+    }
+    std::shared_ptr<MultNode> root_node =
+        std::make_shared<MultNode>(vroot);
+    root_node->ch.push_back(DFS_Central(sorted, 0, root_idx - 1, vroot));
+    root_node->ch.push_back(
+        DFS_Central(sorted, root_idx + 1, n - 1, vroot));
+    return root_node;
+}
+
 std::shared_ptr<MultNode> TreeGenerator::BuildBinFrom(
     const std::vector<Vertice>& v, int root) {
     std::vector<Vertice> sorted = v;
@@ -87,6 +111,18 @@ std::shared_ptr<MultNode> TreeGenerator::BuildBinTree(
     return DFS(sorted, l_ch, r_ch, root);
 }
 
+TreeGenerator::Comp::Comp(const Vertice& ancor) : r(ancor) {}
+
+bool TreeGenerator::Comp::operator()(const Vertice& lhs,
+                                     const Vertice& rhs) const {
+    long long xd1 = 1ll * lhs.x - r.x, yd1 = 1ll * lhs.y - r.y,
+              xd2 = 1LL * rhs.x - r.x, yd2 = 1ll * rhs.y - r.y;
+    long long cp = (xd1 * yd2 - yd1 * xd2);
+    long long sq_d1 = 1ll * xd1 * xd1 + 1ll * yd1 * yd1,
+              sq_d2 = 1ll * xd2 * xd2 + 1LL * yd2 * yd2;
+    return cp != 0 ? cp > 0 : sq_d1 < sq_d2;
+}
+
 std::shared_ptr<MultNode> TreeGenerator::DFS(
     const std::vector<Vertice>& sorted, const std::vector<int>& l_ch,
     const std::vector<int>& r_ch, int r) {
@@ -114,18 +150,27 @@ std::shared_ptr<MultNode> TreeGenerator::DFS_From(
     return curr;
 }
 
+std::shared_ptr<MultNode> TreeGenerator::DFS_Central(
+    std::vector<Vertice>& sorted, int first, int last, const Vertice& r) {
+    if (first > last) {
+        return nullptr;
+    }
+    SortByAngle(sorted, first, last, r);
+    int mid = first + ((last - first) >> 1);
+    int v =
+        std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
+                         *(sorted.begin() + mid), Comp(r)) -
+        sorted.begin();
+    Vertice vv = sorted[v];
+    std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv);
+    curr->ch.push_back(DFS_Central(sorted, first, v - 1, vv));
+    curr->ch.push_back(DFS_Central(sorted, v + 1, last, vv));
+    return curr;
+}
+
 void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted, int first,
                                 int last, const Vertice& r) {
-    auto comp = [this, &r](const Vertice& lhs,
-                           const Vertice& rhs) -> bool {
-        long long xd1 = 1ll * lhs.x - r.x, yd1 = 1ll * lhs.y - r.y,
-                  xd2 = 1LL * rhs.x - r.x, yd2 = 1ll * rhs.y - r.y;
-        long long cp = (xd1 * yd2 - yd1 * xd2);
-        long long sq_d1 = 1ll * xd1 * xd1 + 1ll * yd1 * yd1,
-                  sq_d2 = 1ll * xd2 * xd2 + 1LL * yd2 * yd2;
-        return cp != 0 ? cp > 0 : sq_d1 < sq_d2;
-    };
-    std::sort(sorted.begin() + first, sorted.begin() + last + 1, comp);
+    std::sort(sorted.begin() + first, sorted.begin() + last + 1, Comp(r));
 }
 
 int TreeGenerator::FindNearestIdx(const std::vector<Vertice>& sorted,
