@@ -1,5 +1,53 @@
 #include "tree_generator.h"
 
+namespace tree_generator {
+
+Comp::Comp(const Vertice& ancor) : r(ancor) {}
+
+bool Comp::operator()(const Vertice& lhs, const Vertice& rhs) const {
+    long long xd1 = 1ll * lhs.x - r.x, yd1 = 1ll * lhs.y - r.y,
+              xd2 = 1LL * rhs.x - r.x, yd2 = 1ll * rhs.y - r.y;
+    long long cp = (xd1 * yd2 - yd1 * xd2);
+    long long sq_d1 = 1ll * xd1 * xd1 + 1ll * yd1 * yd1,
+              sq_d2 = 1ll * xd2 * xd2 + 1LL * yd2 * yd2;
+    return cp != 0 ? cp > 0 : sq_d1 < sq_d2;
+}
+
+int SelectNearest::Next(const std::vector<Vertice>& sorted, int first,
+                        int last, const Vertice& r) const {
+    return FindNearestIdx(sorted, first, last, r);
+}
+
+ZoneSelect::ZoneSelect(int zone_denom) : zone_denom_(zone_denom) {}
+
+int ZoneSelect::Next(const std::vector<Vertice>& sorted, int first,
+                     int last, const Vertice& r) const {
+    int sz = last - first, mid = first + (sz >> 1),
+        left = mid - sz / (zone_denom_ << 1),
+        right =
+            left + sz / zone_denom_;  // Find next node zone borders. If
+                                      // zone_denom == 1 (default value),
+                                      // then left == first, right == last.
+    left =
+        std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
+                         *(sorted.begin() + left), Comp(r)) -
+        sorted.begin();
+    return FindNearestIdx(sorted, left, right, r);
+}
+
+SelectRandom::SelectRandom() : g_(std::random_device{}()) {}
+
+int SelectRandom::Next(const std::vector<Vertice>& sorted, int first,
+                       int last, const Vertice& r) const {
+    std::uniform_int_distribution<int> distr(first, last);
+    int candidate = distr(g_);
+    int v =
+        std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
+                         sorted[candidate], Comp(r)) -
+        sorted.begin();
+    return v;
+}
+
 TreeGenerator::TreeGenerator(int n, int max_x, int max_y)
     : n_(n), max_x_(max_x), max_y_(max_y) {}
 
@@ -37,8 +85,9 @@ std::vector<Vertice> TreeGenerator::GenVertices() {
     return v;
 }
 
-std::shared_ptr<MultNode> TreeGenerator::BuildZonedBin(
-    const std::vector<Vertice>& v, int root, int zone_denom) {
+std::shared_ptr<MultNode> TreeGenerator::BuildAnySelectBin(
+    const std::vector<Vertice>& v, int root,
+    std::shared_ptr<NextSelector> next_selector) {
     std::vector<Vertice> sorted = v;
     int n = sorted.size();
     Vertice vroot = sorted[root];
@@ -56,36 +105,9 @@ std::shared_ptr<MultNode> TreeGenerator::BuildZonedBin(
     std::shared_ptr<MultNode> root_node =
         std::make_shared<MultNode>(vroot);
     root_node->ch.push_back(
-        DFS_CentralZone(sorted, 0, root_idx - 1, vroot, zone_denom));
+        DFS_AnySelect(sorted, 0, root_idx - 1, vroot, next_selector));
     root_node->ch.push_back(
-        DFS_CentralZone(sorted, root_idx + 1, n - 1, vroot, zone_denom));
-    return root_node;
-}
-
-std::shared_ptr<MultNode> TreeGenerator::BuildRandomBin(
-    const std::vector<Vertice>& v, int root) {
-    std::vector<Vertice> sorted = v;
-    int n = sorted.size();
-    Vertice vroot = sorted[root];
-    Vertice azimuth = -vroot;  // negative (must be out of border) coords
-                               // for correct first partition!
-
-    SortByAngle(sorted, 0, n - 1, azimuth);
-    int root_idx = -1;
-    for (int i = 0; i < n; ++i) {
-        if (sorted[i] == vroot) {
-            root_idx = i;
-            break;
-        }
-    }
-    std::shared_ptr<MultNode> root_node =
-        std::make_shared<MultNode>(vroot);
-    std::random_device r;
-    std::mt19937 g(r());
-    root_node->ch.push_back(
-        DFS_RandomChoose(sorted, 0, root_idx - 1, vroot, g));
-    root_node->ch.push_back(
-        DFS_RandomChoose(sorted, root_idx + 1, n - 1, vroot, g));
+        DFS_AnySelect(sorted, root_idx + 1, n - 1, vroot, next_selector));
     return root_node;
 }
 
@@ -116,18 +138,6 @@ std::shared_ptr<MultNode> TreeGenerator::BuildBinTree(
     return DFS(sorted, l_ch, r_ch, root);
 }
 
-TreeGenerator::Comp::Comp(const Vertice& ancor) : r(ancor) {}
-
-bool TreeGenerator::Comp::operator()(const Vertice& lhs,
-                                     const Vertice& rhs) const {
-    long long xd1 = 1ll * lhs.x - r.x, yd1 = 1ll * lhs.y - r.y,
-              xd2 = 1LL * rhs.x - r.x, yd2 = 1ll * rhs.y - r.y;
-    long long cp = (xd1 * yd2 - yd1 * xd2);
-    long long sq_d1 = 1ll * xd1 * xd1 + 1ll * yd1 * yd1,
-              sq_d2 = 1ll * xd2 * xd2 + 1LL * yd2 * yd2;
-    return cp != 0 ? cp > 0 : sq_d1 < sq_d2;
-}
-
 std::shared_ptr<MultNode> TreeGenerator::DFS(
     const std::vector<Vertice>& sorted, const std::vector<int>& l_ch,
     const std::vector<int>& r_ch, int r) {
@@ -141,50 +151,20 @@ std::shared_ptr<MultNode> TreeGenerator::DFS(
     return curr;
 }
 
-std::shared_ptr<MultNode> TreeGenerator::DFS_CentralZone(
+std::shared_ptr<MultNode> TreeGenerator::DFS_AnySelect(
     std::vector<Vertice>& sorted, int first, int last, const Vertice& r,
-    int zone_denom) {
+    std::shared_ptr<NextSelector> next_selector) {
     if (first > last) {
         return nullptr;
     }
     SortByAngle(sorted, first, last, r);
-    int sz = last - first, mid = first + (sz >> 1),
-        left = mid - sz / (zone_denom << 1),
-        right =
-            left + sz / zone_denom;  // Find next node zone borders. If
-                                     // zone_denom == 1 (default value),
-                                     // then left == first, right == last.
-    left =
-        std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
-                         *(sorted.begin() + left), Comp(r)) -
-        sorted.begin();
-    int v = FindNearestIdx(sorted, left, right, r);
+    int v = next_selector->Next(sorted, first, last, r);
     Vertice vv = sorted[v];
     std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv);
     curr->ch.push_back(
-        DFS_CentralZone(sorted, first, v - 1, vv, zone_denom));
+        DFS_AnySelect(sorted, first, v - 1, vv, next_selector));
     curr->ch.push_back(
-        DFS_CentralZone(sorted, v + 1, last, vv, zone_denom));
-    return curr;
-}
-
-std::shared_ptr<MultNode> TreeGenerator::DFS_RandomChoose(
-    std::vector<Vertice>& sorted, int first, int last, const Vertice& r,
-    std::mt19937& g) {
-    if (first > last) {
-        return nullptr;
-    }
-    SortByAngle(sorted, first, last, r);
-    std::uniform_int_distribution<int> distr(first, last);
-    int candidate = distr(g);
-    int v =
-        std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
-                         sorted[candidate], Comp(r)) -
-        sorted.begin();
-    Vertice vv = sorted[v];
-    std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv);
-    curr->ch.push_back(DFS_RandomChoose(sorted, first, v - 1, vv, g));
-    curr->ch.push_back(DFS_RandomChoose(sorted, v + 1, last, vv, g));
+        DFS_AnySelect(sorted, v + 1, last, vv, next_selector));
     return curr;
 }
 
@@ -193,8 +173,8 @@ void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted, int first,
     std::sort(sorted.begin() + first, sorted.begin() + last + 1, Comp(r));
 }
 
-int TreeGenerator::FindNearestIdx(const std::vector<Vertice>& sorted,
-                                  int first, int last, const Vertice& r) {
+int FindNearestIdx(const std::vector<Vertice>& sorted, int first, int last,
+                   const Vertice& r) {
     long long min_d = std::numeric_limits<long long>::max();
     int idx = -1;
     for (int i = first; i <= last; ++i) {
@@ -210,3 +190,5 @@ int TreeGenerator::FindNearestIdx(const std::vector<Vertice>& sorted,
     }
     return idx;
 }
+
+}  // namespace tree_generator
