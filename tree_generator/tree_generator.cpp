@@ -37,8 +37,8 @@ std::vector<Vertice> TreeGenerator::GenVertices() {
     return v;
 }
 
-std::shared_ptr<MultNode> TreeGenerator::BuildBalancedBin(
-    const std::vector<Vertice>& v, int root) {
+std::shared_ptr<MultNode> TreeGenerator::BuildZonedBin(
+    const std::vector<Vertice>& v, int root, int zone_denom) {
     std::vector<Vertice> sorted = v;
     int n = sorted.size();
     Vertice vroot = sorted[root];
@@ -55,32 +55,10 @@ std::shared_ptr<MultNode> TreeGenerator::BuildBalancedBin(
     }
     std::shared_ptr<MultNode> root_node =
         std::make_shared<MultNode>(vroot);
-    root_node->ch.push_back(DFS_Central(sorted, 0, root_idx - 1, vroot));
     root_node->ch.push_back(
-        DFS_Central(sorted, root_idx + 1, n - 1, vroot));
-    return root_node;
-}
-
-std::shared_ptr<MultNode> TreeGenerator::BuildBinFrom(
-    const std::vector<Vertice>& v, int root) {
-    std::vector<Vertice> sorted = v;
-    int n = sorted.size();
-    Vertice vroot = sorted[root];
-    Vertice azimuth = -vroot;  // negative (must be out of border) coords
-                               // for correct first partition!
-
-    SortByAngle(sorted, 0, n - 1, azimuth);
-    int root_idx = -1;
-    for (int i = 0; i < n; ++i) {
-        if (sorted[i] == vroot) {
-            root_idx = i;
-            break;
-        }
-    }
-    std::shared_ptr<MultNode> root_node =
-        std::make_shared<MultNode>(vroot);
-    root_node->ch.push_back(DFS_From(sorted, 0, root_idx - 1, vroot));
-    root_node->ch.push_back(DFS_From(sorted, root_idx + 1, n - 1, vroot));
+        DFS_CentralZone(sorted, 0, root_idx - 1, vroot, zone_denom));
+    root_node->ch.push_back(
+        DFS_CentralZone(sorted, root_idx + 1, n - 1, vroot, zone_denom));
     return root_node;
 }
 
@@ -136,35 +114,30 @@ std::shared_ptr<MultNode> TreeGenerator::DFS(
     return curr;
 }
 
-std::shared_ptr<MultNode> TreeGenerator::DFS_From(
-    std::vector<Vertice>& sorted, int first, int last, const Vertice& r) {
+std::shared_ptr<MultNode> TreeGenerator::DFS_CentralZone(
+    std::vector<Vertice>& sorted, int first, int last, const Vertice& r,
+    int zone_denom) {
     if (first > last) {
         return nullptr;
     }
     SortByAngle(sorted, first, last, r);
-    int v = FindNearestIdx(sorted, first, last, r);
-    Vertice vv = sorted[v];
-    std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv);
-    curr->ch.push_back(DFS_From(sorted, first, v - 1, vv));
-    curr->ch.push_back(DFS_From(sorted, v + 1, last, vv));
-    return curr;
-}
-
-std::shared_ptr<MultNode> TreeGenerator::DFS_Central(
-    std::vector<Vertice>& sorted, int first, int last, const Vertice& r) {
-    if (first > last) {
-        return nullptr;
-    }
-    SortByAngle(sorted, first, last, r);
-    int mid = first + ((last - first) >> 1);
-    int v =
+    int sz = last - first, mid = first + (sz >> 1),
+        left = mid - sz / (zone_denom << 1),
+        right =
+            left + sz / zone_denom;  // Find next node zone borders. If
+                                     // zone_denom == 1 (default value),
+                                     // then left == first, right == last.
+    left =
         std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
-                         *(sorted.begin() + mid), Comp(r)) -
+                         *(sorted.begin() + left), Comp(r)) -
         sorted.begin();
+    int v = FindNearestIdx(sorted, left, right, r);
     Vertice vv = sorted[v];
     std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv);
-    curr->ch.push_back(DFS_Central(sorted, first, v - 1, vv));
-    curr->ch.push_back(DFS_Central(sorted, v + 1, last, vv));
+    curr->ch.push_back(
+        DFS_CentralZone(sorted, first, v - 1, vv, zone_denom));
+    curr->ch.push_back(
+        DFS_CentralZone(sorted, v + 1, last, vv, zone_denom));
     return curr;
 }
 

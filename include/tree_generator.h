@@ -16,10 +16,8 @@ class TreeGenerator {
 
     void PrintV(const std::vector<Vertice>& v) const;
     std::vector<Vertice> GenVertices();
-    std::shared_ptr<MultNode> BuildBalancedBin(const std::vector<Vertice>& v,
-                                           int root);
-    std::shared_ptr<MultNode> BuildBinFrom(const std::vector<Vertice>& v,
-                                           int root);
+    std::shared_ptr<MultNode> BuildZonedBin(const std::vector<Vertice>& v,
+                                            int root, int zone_denom = 1);
     std::shared_ptr<MultNode> BuildBinTree(const std::vector<Vertice>& v);
 
    private:
@@ -31,12 +29,10 @@ class TreeGenerator {
         bool operator()(const Vertice& lhs, const Vertice& rhs) const;
     };
 
-    std::shared_ptr<MultNode> DFS_From(std::vector<Vertice>& sorted,
-                                       int first, int last,
-                                       const Vertice& r);
-    std::shared_ptr<MultNode> DFS_Central(std::vector<Vertice>& sorted,
-                                          int first, int last,
-                                          const Vertice& r);
+    std::shared_ptr<MultNode> DFS_CentralZone(std::vector<Vertice>& sorted,
+                                              int first, int last,
+                                              const Vertice& r,
+                                              int zone_denom = 1);
     std::shared_ptr<MultNode> DFS(const std::vector<Vertice>& sorted,
                                   const std::vector<int>& l_ch,
                                   const std::vector<int>& r_ch, int r);
