@@ -62,6 +62,33 @@ std::shared_ptr<MultNode> TreeGenerator::BuildZonedBin(
     return root_node;
 }
 
+std::shared_ptr<MultNode> TreeGenerator::BuildRandomBin(
+    const std::vector<Vertice>& v, int root) {
+    std::vector<Vertice> sorted = v;
+    int n = sorted.size();
+    Vertice vroot = sorted[root];
+    Vertice azimuth = -vroot;  // negative (must be out of border) coords
+                               // for correct first partition!
+
+    SortByAngle(sorted, 0, n - 1, azimuth);
+    int root_idx = -1;
+    for (int i = 0; i < n; ++i) {
+        if (sorted[i] == vroot) {
+            root_idx = i;
+            break;
+        }
+    }
+    std::shared_ptr<MultNode> root_node =
+        std::make_shared<MultNode>(vroot);
+    std::random_device r;
+    std::mt19937 g(r());
+    root_node->ch.push_back(
+        DFS_RandomChoose(sorted, 0, root_idx - 1, vroot, g));
+    root_node->ch.push_back(
+        DFS_RandomChoose(sorted, root_idx + 1, n - 1, vroot, g));
+    return root_node;
+}
+
 std::shared_ptr<MultNode> TreeGenerator::BuildBinTree(
     const std::vector<Vertice>& v) {
     std::vector<Vertice> sorted = v;
@@ -138,6 +165,26 @@ std::shared_ptr<MultNode> TreeGenerator::DFS_CentralZone(
         DFS_CentralZone(sorted, first, v - 1, vv, zone_denom));
     curr->ch.push_back(
         DFS_CentralZone(sorted, v + 1, last, vv, zone_denom));
+    return curr;
+}
+
+std::shared_ptr<MultNode> TreeGenerator::DFS_RandomChoose(
+    std::vector<Vertice>& sorted, int first, int last, const Vertice& r,
+    std::mt19937& g) {
+    if (first > last) {
+        return nullptr;
+    }
+    SortByAngle(sorted, first, last, r);
+    std::uniform_int_distribution<int> distr(first, last);
+    int candidate = distr(g);
+    int v =
+        std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
+                         sorted[candidate], Comp(r)) -
+        sorted.begin();
+    Vertice vv = sorted[v];
+    std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv);
+    curr->ch.push_back(DFS_RandomChoose(sorted, first, v - 1, vv, g));
+    curr->ch.push_back(DFS_RandomChoose(sorted, v + 1, last, vv, g));
     return curr;
 }
 

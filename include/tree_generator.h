@@ -18,6 +18,8 @@ class TreeGenerator {
     std::vector<Vertice> GenVertices();
     std::shared_ptr<MultNode> BuildZonedBin(const std::vector<Vertice>& v,
                                             int root, int zone_denom = 1);
+    std::shared_ptr<MultNode> BuildRandomBin(const std::vector<Vertice>& v,
+                                             int root);
     std::shared_ptr<MultNode> BuildBinTree(const std::vector<Vertice>& v);
 
    private:
@@ -36,6 +38,9 @@ class TreeGenerator {
     std::shared_ptr<MultNode> DFS(const std::vector<Vertice>& sorted,
                                   const std::vector<int>& l_ch,
                                   const std::vector<int>& r_ch, int r);
+    std::shared_ptr<MultNode> DFS_RandomChoose(
+        std::vector<Vertice>& sorted, int first, int last,
+        const Vertice& r, std::mt19937& g);
     void SortByAngle(std::vector<Vertice>& sorted, int first, int last,
                      const Vertice& r);
     int FindNearestIdx(const std::vector<Vertice>& sorted, int first,
