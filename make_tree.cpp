@@ -17,7 +17,7 @@ int main() {
     settings.SetMaxX(1500).SetMaxY(1100);
     auto v = tree_gen.GenVertices();
     auto full_zone_bin = tree_gen.BuildZonedBin(v, 60);
-    auto narrow_zone_bin = tree_gen.BuildZonedBin(v, 60, 5000000);
+    auto narrow_zone_bin = tree_gen.BuildZonedBin(v, 60, 5);
     auto bin_t = tree_gen.BuildBinTree(v);
     TreeRenderer tree_rend(settings);
     tree_rend.RenderOmni(bin_t).Render(bin_output);
