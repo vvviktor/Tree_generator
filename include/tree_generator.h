@@ -36,13 +36,13 @@ class SelectNearest final : public NextSelector {
 
 class ZoneSelect final : public NextSelector {
    public:
-    ZoneSelect(int zone_denom);
+    ZoneSelect(double zone_denom);
 
     int Next(const std::vector<Vertice>& sorted, int first, int last,
              const Vertice& r) const override;
 
    private:
-    int zone_denom_ = 1;
+    double zone_denom_ = 1;
 };
 
 class SelectRandom final : public NextSelector {

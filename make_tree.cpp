@@ -18,7 +18,7 @@ int main() {
         std::make_shared<tree_generator::SelectNearest>();
     auto random_selector =
         std::make_shared<tree_generator::SelectRandom>();
-    auto zoned_selector = std::make_shared<tree_generator::ZoneSelect>(5);
+    auto zoned_selector = std::make_shared<tree_generator::ZoneSelect>(1.01);
     auto greedy_short_route_bin =
         tree_gen.BuildAnySelectBin(v, 60, nearest_selector);
     auto narrow_zone_bin =

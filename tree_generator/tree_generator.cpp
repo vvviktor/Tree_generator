@@ -18,16 +18,19 @@ int SelectNearest::Next(const std::vector<Vertice>& sorted, int first,
     return FindNearestIdx(sorted, first, last, r);
 }
 
-ZoneSelect::ZoneSelect(int zone_denom) : zone_denom_(zone_denom) {}
+ZoneSelect::ZoneSelect(double zone_denom) : zone_denom_(zone_denom) {}
 
 int ZoneSelect::Next(const std::vector<Vertice>& sorted, int first,
                      int last, const Vertice& r) const {
     int sz = last - first, mid = first + (sz >> 1),
-        left = mid - sz / (zone_denom_ << 1),
+        left =
+            mid - static_cast<int>(std::floor(sz / (zone_denom_ * 2.0))),
         right =
-            left + sz / zone_denom_;  // Find next node zone borders. If
-                                      // zone_denom == 1 (default value),
-                                      // then left == first, right == last.
+            left +
+            static_cast<int>(std::floor(
+                sz / zone_denom_));  // Find next node zone borders. If
+                                     // zone_denom == 1 (default value),
+                                     // then left == first, right == last.
     left =
         std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
                          *(sorted.begin() + left), Comp(r)) -
