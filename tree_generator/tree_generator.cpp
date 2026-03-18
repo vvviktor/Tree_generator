@@ -141,6 +141,11 @@ std::shared_ptr<MultNode> TreeGenerator::BuildBinTree(
     return DFS(sorted, l_ch, r_ch, root);
 }
 
+void TreeGenerator::SetMinSpanAngleDeg(double deg) {
+    min_span_cos_ = std::cos(ToRadians(deg));
+    min_span_cos_sq_ = min_span_cos_ * min_span_cos_;
+}
+
 std::shared_ptr<MultNode> TreeGenerator::DFS(
     const std::vector<Vertice>& sorted, const std::vector<int>& l_ch,
     const std::vector<int>& r_ch, int r) {
@@ -163,17 +168,53 @@ std::shared_ptr<MultNode> TreeGenerator::DFS_AnySelect(
     SortByAngle(sorted, first, last, r);
     int v = next_selector->Next(sorted, first, last, r);
     Vertice vv = sorted[v];
-    std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv);
-    curr->ch.push_back(
-        DFS_AnySelect(sorted, first, v - 1, vv, next_selector));
-    curr->ch.push_back(
-        DFS_AnySelect(sorted, v + 1, last, vv, next_selector));
+    std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv),
+                              l_ch = DFS_AnySelect(sorted, first, v - 1,
+                                                   vv, next_selector),
+                              r_ch = DFS_AnySelect(sorted, v + 1, last, vv,
+                                                   next_selector);
+    if (l_ch && r_ch) {
+        Vertice a = l_ch->u, b = r_ch->u;
+        if (!AXB_IsEqOrGreaterMinSpan(a, r, b)) {
+            SortByAngle(sorted, first, last, r);
+            std::swap(sorted[v], sorted[first]);
+            l_ch =
+                DFS_AnySelect(sorted, first + 1, last, vv, next_selector);
+            r_ch = nullptr;
+        }
+    }
+    curr->ch.push_back(l_ch);
+    curr->ch.push_back(r_ch);
     return curr;
 }
 
 void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted, int first,
                                 int last, const Vertice& r) {
     std::sort(sorted.begin() + first, sorted.begin() + last + 1, Comp(r));
+}
+
+double TreeGenerator::ToRadians(double deg) {
+    return deg * DEG_TO_RAD;
+}
+
+bool TreeGenerator::AXB_IsEqOrGreaterMinSpan(const Vertice& a,
+                                             const Vertice& x,
+                                             const Vertice& b) {
+    double XAxd = 1. * a.x - x.x, XAyd = 1. * a.y - x.y,
+           XBxd = 1. * b.x - x.x, XByd = 1. * b.y - x.y;
+    double dot = XAxd * XBxd + XAyd * XByd,
+           XAsql = XAxd * XAxd + XAyd * XAyd,
+           XBsql = XBxd * XBxd + XByd * XByd;
+    if (min_span_cos_ + EPS > 0) {
+        if (dot < -EPS) {
+            return true;
+        }
+        return dot * dot <= min_span_cos_sq_ * XAsql * XBsql + EPS;
+    }
+    if (dot >= -EPS) {
+        return false;
+    }
+    return dot * dot + EPS >= min_span_cos_sq_ * XAsql * XBsql;
 }
 
 int FindNearestIdx(const std::vector<Vertice>& sorted, int first, int last,
