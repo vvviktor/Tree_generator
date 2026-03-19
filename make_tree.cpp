@@ -10,8 +10,8 @@ int main() {
     std::ofstream a_full_zone_output("a_short_route_tree.svg");
     std::ofstream a_narrow_zone_output("a_narrow_zone_tree.svg");
     std::ofstream a_random_tree_output("a_random_tree.svg");
-    tree_generator::TreeGenerator tree_gen(50, 1500, 1100);
-    tree_gen.SetMinSpanAngleDeg(30);
+    tree_generator::TreeGenerator tree_gen(500, 1500, 1100);
+    tree_gen.SetMinSpanAngleDeg(10);
     RenderSettings settings;
     settings.SetMaxX(1500).SetMaxY(1100);
     auto v = tree_gen.GenVertices();

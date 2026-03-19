@@ -167,22 +167,24 @@ std::shared_ptr<MultNode> TreeGenerator::DFS_AnySelect(
     }
     SortByAngle(sorted, first, last, r);
     int v = next_selector->Next(sorted, first, last, r);
-    Vertice vv = sorted[v];
+    Vertice vv = sorted[v], l_most = sorted[first];
     std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv),
-                              l_ch = DFS_AnySelect(sorted, first, v - 1,
-                                                   vv, next_selector),
-                              r_ch = DFS_AnySelect(sorted, v + 1, last, vv,
-                                                   next_selector);
-    if (l_ch && r_ch) {
-        Vertice a = l_ch->u, b = r_ch->u;
-        if (!AXB_IsEqOrGreaterMinSpan(a, r, b)) {
-            SortByAngle(sorted, first, last, r);
-            std::swap(sorted[v], sorted[first]);
-            l_ch =
-                DFS_AnySelect(sorted, first + 1, last, vv, next_selector);
-            r_ch = nullptr;
+                              l_ch = nullptr, r_ch = nullptr;
+    if (v - 1 - first >= 0 && last - v - 1 >= 0) {
+        SortByAngle(sorted, first, v - 1, vv);
+        SortByAngle(sorted, v + 1, last, vv);
+        Vertice a = sorted[next_selector->Next(sorted, first, v - 1, vv)],
+                b = sorted[next_selector->Next(sorted, v + 1, last, vv)];
+        if (!AXB_IsEqOrGreaterMinSpan(a, vv, b)) {
+            curr->u = l_most;
+            l_ch = DFS_AnySelect(sorted, first + 1, last, l_most,
+                                 next_selector);
+            curr->ch.push_back(l_ch);
+            return curr;
         }
     }
+    l_ch = DFS_AnySelect(sorted, first, v - 1, vv, next_selector);
+    r_ch = DFS_AnySelect(sorted, v + 1, last, vv, next_selector);
     curr->ch.push_back(l_ch);
     curr->ch.push_back(r_ch);
     return curr;
