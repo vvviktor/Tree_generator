@@ -47,7 +47,7 @@ struct RenderSettings {
                node_color = svg::Rgb(255, 128, 0),
                edge_color = svg::Rgb(0, 153, 0),
                outline_color = svg::Rgb(96, 96, 96);
-    double node_radius = 7., edge_width = 4.;
+    double node_radius = 5., edge_width = 2.2;
     svg::StrokeLineCap line_cap = svg::StrokeLineCap::ROUND;
     svg::StrokeLineJoin line_join = svg::StrokeLineJoin::ROUND;
     double edge_visibility_init_dur = 0.01, edge_drawing_dur = .5,

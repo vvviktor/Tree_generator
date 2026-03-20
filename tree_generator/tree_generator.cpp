@@ -74,7 +74,6 @@ std::shared_ptr<MultNode> TreeGenerator::BuildAnySelectBin(
     std::shared_ptr<NextSelector> next_selector) {
     std::vector<Vertice> sorted = v_;
     int n = sorted.size();
-    SortByAngle(sorted, 0, n - 1, start_azimuth_);
     return DFS_AnySelect(sorted, 0, n - 1, start_azimuth_, next_selector);
 }
 
@@ -117,7 +116,7 @@ void TreeGenerator::GenVertices() {
     std::set<Vertice> seen;
     for (auto& vert : v_) {
         int x = distr_x(g), y = distr_y(g);
-        while (seen.find({x, y}) != seen.end()) {
+        while (seen.count({x, y}) != 0) {
             x = distr_x(g);
             y = distr_y(g);
         }
@@ -156,23 +155,25 @@ std::shared_ptr<MultNode> TreeGenerator::DFS_AnySelect(
     if (first > last) {
         return nullptr;
     }
+    SortByAngle(sorted, first, last, azimuth);
     int v = azimuth == start_azimuth_
                 ? FindRootID(sorted)
                 : next_selector->Next(sorted, first, last, azimuth);
     Vertice vv = sorted[v], l_most = sorted[first];
     std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv),
                               l_ch = nullptr, r_ch = nullptr;
-    SortByAngle(sorted, first, v - 1, vv);
-    SortByAngle(sorted, v + 1, last, vv);
     if (v - 1 - first >= 0 &&
         last - v - 1 >= 0) {  // check both subtrees not empty
-        Vertice a = sorted[next_selector->Next(sorted, first, v - 1, vv)],
-                b = sorted[next_selector->Next(sorted, v + 1, last, vv)];
+        auto next_sort = sorted;
+        SortByAngle(next_sort, first, v - 1, vv);
+        SortByAngle(next_sort, v + 1, last, vv);
+        Vertice
+            a = sorted[next_selector->Next(next_sort, first, v - 1, vv)],
+            b = sorted[next_selector->Next(next_sort, v + 1, last, vv)];
         if (!AXB_IsEqOrGreaterMinSpan(a, vv, b)) {
             curr->u = l_most;  // if span angle is less then min span
                                // angle, then don't split at this node, set
                                // l_ch leftmost point in current sector
-            SortByAngle(sorted, first + 1, last, l_most);
             l_ch = DFS_AnySelect(sorted, first + 1, last, l_most,
                                  next_selector);
             curr->ch.push_back(l_ch);
