@@ -43,7 +43,7 @@ struct RenderSettings {
     RenderSettings& SetEdgeDrawingDuration(double dur);
 
     double max_x = .0, max_y = .0;
-    svg::Color background_color = svg::Rgb(32, 32, 32),
+    svg::Color background_color = svg::Rgb(13, 17, 23),
                node_color = svg::Rgb(255, 128, 0),
                edge_color = svg::Rgb(0, 153, 0),
                outline_color = svg::Rgb(96, 96, 96);

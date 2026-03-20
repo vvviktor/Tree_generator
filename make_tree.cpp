@@ -9,12 +9,12 @@
 int main() {
     std::ofstream a_restricted_output("a_restricted_tree.svg");
     std::ofstream a_free_output("a_free_tree.svg");
-    tree_generator::TreeGenerator tree_gen(500, 1500, 1100);
+    tree_generator::TreeGenerator tree_gen(1500, 1600, 1200);
     RenderSettings settings;
-    settings.SetMaxX(1500).SetMaxY(1100);
+    settings.SetMaxX(1600).SetMaxY(1200);
     auto nearest_selector =
         std::make_shared<tree_generator::SelectNearest>();
-    tree_gen.SetMinSpanAngleDeg(100);
+    tree_gen.SetMinSpanAngleDeg(95);
     auto restricted_bin = tree_gen.BuildAnySelectBin(nearest_selector);
     tree_gen.SetMinSpanAngleDeg(0);
     auto free_bin = tree_gen.BuildAnySelectBin(nearest_selector);
