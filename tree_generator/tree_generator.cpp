@@ -105,7 +105,6 @@ std::shared_ptr<MultNode> TreeGenerator::BuildBinTree() {
 
 void TreeGenerator::SetMinSpanAngleDeg(double deg) {
     min_span_cos_ = std::cos(ToRadians(deg));
-    min_span_cos_sq_ = min_span_cos_ * min_span_cos_;
 }
 
 void TreeGenerator::GenVertices() {
@@ -208,16 +207,8 @@ bool TreeGenerator::AXB_IsEqOrGreaterMinSpan(const Vertice& a,
     double dot = XAxd * XBxd + XAyd * XByd,
            XAsql = XAxd * XAxd + XAyd * XAyd,
            XBsql = XBxd * XBxd + XByd * XByd;
-    if (min_span_cos_ + EPS > 0) {
-        if (dot < -EPS) {
-            return true;
-        }
-        return dot * dot <= min_span_cos_sq_ * XAsql * XBsql + EPS;
-    }
-    if (dot >= -EPS) {
-        return false;
-    }
-    return dot * dot + EPS >= min_span_cos_sq_ * XAsql * XBsql;
+    double AXB_cos = dot / std::sqrt(XAsql * XBsql);
+    return AXB_cos + EPS <= min_span_cos_;
 }
 
 int FindNearestIdx(const std::vector<Vertice>& sorted, int first, int last,

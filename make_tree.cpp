@@ -14,7 +14,7 @@ int main() {
     settings.SetMaxX(1500).SetMaxY(1100);
     auto nearest_selector =
         std::make_shared<tree_generator::SelectNearest>();
-    tree_gen.SetMinSpanAngleDeg(80);
+    tree_gen.SetMinSpanAngleDeg(100);
     auto restricted_bin = tree_gen.BuildAnySelectBin(nearest_selector);
     tree_gen.SetMinSpanAngleDeg(0);
     auto free_bin = tree_gen.BuildAnySelectBin(nearest_selector);

@@ -74,7 +74,7 @@ class TreeGenerator {
                       // correct first partition!
     static constexpr double EPS = 1e-9, PI = 3.14159265358979323846,
                             DEG_TO_RAD = PI / 180.;
-    double min_span_cos_ = 1., min_span_cos_sq_ = 1.;
+    double min_span_cos_ = 1.;
     std::vector<Vertice> v_;
 
     void GenVertices();
