@@ -163,8 +163,9 @@ std::shared_ptr<MultNode> TreeGenerator::DFS_AnySelect(
     std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv),
                               l_ch = nullptr, r_ch = nullptr;
     if (v - 1 - first >= 0 &&
-        last - v - 1 >= 0) {  // check both subtrees not empty
-        auto next_sort = sorted;
+        last - v - 1 >= 0) {      // check both subtrees not empty
+        auto next_sort = sorted;  // create a copy of current sector, then
+                                  // emulate child-nodes procedures
         SortByAngle(next_sort, first, v - 1, vv);
         SortByAngle(next_sort, v + 1, last, vv);
         Vertice
