@@ -2,11 +2,11 @@
 
 namespace tree_generator {
 
-Comp::Comp(const Vertice& ancor) : r(ancor) {}
+Comp::Comp(const Vertice& azimuth) : az(azimuth) {}
 
 bool Comp::operator()(const Vertice& lhs, const Vertice& rhs) const {
-    long long xd1 = 1ll * lhs.x - r.x, yd1 = 1ll * lhs.y - r.y,
-              xd2 = 1LL * rhs.x - r.x, yd2 = 1ll * rhs.y - r.y;
+    long long xd1 = 1ll * lhs.x - az.x, yd1 = 1ll * lhs.y - az.y,
+              xd2 = 1LL * rhs.x - az.x, yd2 = 1ll * rhs.y - az.y;
     long long cp = (xd1 * yd2 - yd1 * xd2);
     long long sq_d1 = 1ll * xd1 * xd1 + 1ll * yd1 * yd1,
               sq_d2 = 1ll * xd2 * xd2 + 1LL * yd2 * yd2;
@@ -14,14 +14,14 @@ bool Comp::operator()(const Vertice& lhs, const Vertice& rhs) const {
 }
 
 int SelectNearest::Next(const std::vector<Vertice>& sorted, int first,
-                        int last, const Vertice& r) const {
-    return FindNearestIdx(sorted, first, last, r);
+                        int last, const Vertice& azimuth) const {
+    return FindNearestIdx(sorted, first, last, azimuth);
 }
 
 ZoneSelect::ZoneSelect(double zone_denom) : zone_denom_(zone_denom) {}
 
 int ZoneSelect::Next(const std::vector<Vertice>& sorted, int first,
-                     int last, const Vertice& r) const {
+                     int last, const Vertice& azimuth) const {
     int sz = last - first, mid = first + (sz >> 1),
         left =
             mid - static_cast<int>(std::floor(sz / (zone_denom_ * 2.0))),
@@ -33,31 +33,33 @@ int ZoneSelect::Next(const std::vector<Vertice>& sorted, int first,
                                      // then left == first, right == last.
     left =
         std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
-                         *(sorted.begin() + left), Comp(r)) -
+                         *(sorted.begin() + left), Comp(azimuth)) -
         sorted.begin();
-    return FindNearestIdx(sorted, left, right, r);
+    return FindNearestIdx(sorted, left, right, azimuth);
 }
 
 SelectRandom::SelectRandom() : g_(std::random_device{}()) {}
 
 int SelectRandom::Next(const std::vector<Vertice>& sorted, int first,
-                       int last, const Vertice& r) const {
+                       int last, const Vertice& azimuth) const {
     std::uniform_int_distribution<int> distr(first, last);
     int candidate = distr(g_);
     int v =
         std::lower_bound(sorted.begin() + first, sorted.begin() + last + 1,
-                         sorted[candidate], Comp(r)) -
+                         sorted[candidate], Comp(azimuth)) -
         sorted.begin();
     return v;
 }
 
 TreeGenerator::TreeGenerator(int n, int max_x, int max_y)
-    : n_(n), max_x_(max_x), max_y_(max_y) {}
+    : n_(n), max_x_(max_x), max_y_(max_y), v_(n) {
+    GenVertices();
+}
 
-void TreeGenerator::PrintV(const std::vector<Vertice>& v) const {
+void TreeGenerator::PrintV() const {
     bool is_first = true;
     std::cout << '[';
-    for (auto& v : v) {
+    for (auto& v : v_) {
         if (is_first) {
             is_first = false;
         } else {
@@ -68,55 +70,16 @@ void TreeGenerator::PrintV(const std::vector<Vertice>& v) const {
     std::cout << "]\n";
 }
 
-std::vector<Vertice> TreeGenerator::GenVertices() {
-    std::random_device r;
-    std::mt19937 g(r());
-    std::uniform_int_distribution<int> distr_x(0, max_x_),
-        distr_y(0, max_y_);
-    std::vector<Vertice> v(n_);
-    std::set<Vertice> seen;
-    for (auto& vert : v) {
-        int x = distr_x(g), y = distr_y(g);
-        while (seen.find({x, y}) != seen.end()) {
-            x = distr_x(g);
-            y = distr_y(g);
-        }
-        seen.insert({x, y});
-        vert.x = x;
-        vert.y = y;
-    }
-    return v;
-}
-
 std::shared_ptr<MultNode> TreeGenerator::BuildAnySelectBin(
-    const std::vector<Vertice>& v, int root,
     std::shared_ptr<NextSelector> next_selector) {
-    std::vector<Vertice> sorted = v;
+    std::vector<Vertice> sorted = v_;
     int n = sorted.size();
-    Vertice vroot = sorted[root];
-    Vertice azimuth = -vroot;  // negative (must be out of border) coords
-                               // for correct first partition!
-
-    SortByAngle(sorted, 0, n - 1, azimuth);
-    int root_idx = -1;
-    for (int i = 0; i < n; ++i) {
-        if (sorted[i] == vroot) {
-            root_idx = i;
-            break;
-        }
-    }
-    std::shared_ptr<MultNode> root_node =
-        std::make_shared<MultNode>(vroot);
-    root_node->ch.push_back(
-        DFS_AnySelect(sorted, 0, root_idx - 1, vroot, next_selector));
-    root_node->ch.push_back(
-        DFS_AnySelect(sorted, root_idx + 1, n - 1, vroot, next_selector));
-    return root_node;
+    SortByAngle(sorted, 0, n - 1, start_azimuth_);
+    return DFS_AnySelect(sorted, 0, n - 1, start_azimuth_, next_selector);
 }
 
-std::shared_ptr<MultNode> TreeGenerator::BuildBinTree(
-    const std::vector<Vertice>& v) {
-    std::vector<Vertice> sorted = v;
+std::shared_ptr<MultNode> TreeGenerator::BuildBinTree() {
+    std::vector<Vertice> sorted = v_;
     std::sort(sorted.begin(), sorted.end());
     std::vector<int> parent(n_, -1), l_ch(n_, -1), r_ch(n_, -1);
     int last = 0, root = 0;
@@ -146,6 +109,34 @@ void TreeGenerator::SetMinSpanAngleDeg(double deg) {
     min_span_cos_sq_ = min_span_cos_ * min_span_cos_;
 }
 
+void TreeGenerator::GenVertices() {
+    std::random_device r;
+    std::mt19937 g(r());
+    std::uniform_int_distribution<int> distr_x(0, max_x_),
+        distr_y(0, max_y_);
+    std::set<Vertice> seen;
+    for (auto& vert : v_) {
+        int x = distr_x(g), y = distr_y(g);
+        while (seen.find({x, y}) != seen.end()) {
+            x = distr_x(g);
+            y = distr_y(g);
+        }
+        seen.insert({x, y});
+        vert.x = x;
+        vert.y = y;
+    }
+}
+
+int TreeGenerator::FindRootID(const std::vector<Vertice>& sorted) {
+    Vertice lookup = v_[root_id_];
+    for (int i = 0; i < n_; ++i) {
+        if (sorted[i] == lookup) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 std::shared_ptr<MultNode> TreeGenerator::DFS(
     const std::vector<Vertice>& sorted, const std::vector<int>& l_ch,
     const std::vector<int>& r_ch, int r) {
@@ -160,23 +151,28 @@ std::shared_ptr<MultNode> TreeGenerator::DFS(
 }
 
 std::shared_ptr<MultNode> TreeGenerator::DFS_AnySelect(
-    std::vector<Vertice>& sorted, int first, int last, const Vertice& r,
-    std::shared_ptr<NextSelector> next_selector) {
+    std::vector<Vertice>& sorted, int first, int last,
+    const Vertice& azimuth, std::shared_ptr<NextSelector> next_selector) {
     if (first > last) {
         return nullptr;
     }
-    SortByAngle(sorted, first, last, r);
-    int v = next_selector->Next(sorted, first, last, r);
+    int v = azimuth == start_azimuth_
+                ? FindRootID(sorted)
+                : next_selector->Next(sorted, first, last, azimuth);
     Vertice vv = sorted[v], l_most = sorted[first];
     std::shared_ptr<MultNode> curr = std::make_shared<MultNode>(vv),
                               l_ch = nullptr, r_ch = nullptr;
-    if (v - 1 - first >= 0 && last - v - 1 >= 0) {
-        SortByAngle(sorted, first, v - 1, vv);
-        SortByAngle(sorted, v + 1, last, vv);
+    SortByAngle(sorted, first, v - 1, vv);
+    SortByAngle(sorted, v + 1, last, vv);
+    if (v - 1 - first >= 0 &&
+        last - v - 1 >= 0) {  // check both subtrees not empty
         Vertice a = sorted[next_selector->Next(sorted, first, v - 1, vv)],
                 b = sorted[next_selector->Next(sorted, v + 1, last, vv)];
         if (!AXB_IsEqOrGreaterMinSpan(a, vv, b)) {
-            curr->u = l_most;
+            curr->u = l_most;  // if span angle is less then min span
+                               // angle, then don't split at this node, set
+                               // l_ch leftmost point in current sector
+            SortByAngle(sorted, first + 1, last, l_most);
             l_ch = DFS_AnySelect(sorted, first + 1, last, l_most,
                                  next_selector);
             curr->ch.push_back(l_ch);
@@ -192,6 +188,9 @@ std::shared_ptr<MultNode> TreeGenerator::DFS_AnySelect(
 
 void TreeGenerator::SortByAngle(std::vector<Vertice>& sorted, int first,
                                 int last, const Vertice& r) {
+    if (first > last) {
+        return;
+    }
     std::sort(sorted.begin() + first, sorted.begin() + last + 1, Comp(r));
 }
 
@@ -220,14 +219,15 @@ bool TreeGenerator::AXB_IsEqOrGreaterMinSpan(const Vertice& a,
 }
 
 int FindNearestIdx(const std::vector<Vertice>& sorted, int first, int last,
-                   const Vertice& r) {
+                   const Vertice& azimuth) {
     long long min_d = std::numeric_limits<long long>::max();
     int idx = -1;
     for (int i = first; i <= last; ++i) {
-        if (sorted[i] == r) {
+        if (sorted[i] == azimuth) {
             continue;
         }
-        long long xd = sorted[i].x - r.x, yd = sorted[i].y - r.y;
+        long long xd = sorted[i].x - azimuth.x,
+                  yd = sorted[i].y - azimuth.y;
         long long sq_d = xd * xd + yd * yd;
         if (sq_d < min_d) {
             min_d = sq_d;

@@ -12,14 +12,12 @@ int main() {
     tree_generator::TreeGenerator tree_gen(500, 1500, 1100);
     RenderSettings settings;
     settings.SetMaxX(1500).SetMaxY(1100);
-    auto v = tree_gen.GenVertices();
     auto nearest_selector =
         std::make_shared<tree_generator::SelectNearest>();
-    tree_gen.SetMinSpanAngleDeg(150);
-    auto restricted_bin =
-        tree_gen.BuildAnySelectBin(v, 6, nearest_selector);
+    tree_gen.SetMinSpanAngleDeg(80);
+    auto restricted_bin = tree_gen.BuildAnySelectBin(nearest_selector);
     tree_gen.SetMinSpanAngleDeg(0);
-    auto free_bin = tree_gen.BuildAnySelectBin(v, 6, nearest_selector);
+    auto free_bin = tree_gen.BuildAnySelectBin(nearest_selector);
     TreeRenderer tree_rend(settings);
     tree_rend.RenderAnimatedBFS(restricted_bin)
         .Render(a_restricted_output);
